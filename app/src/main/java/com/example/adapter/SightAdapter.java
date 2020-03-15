@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.example.bean.Sight;
 import com.example.indoornavigation.R;
+import com.example.indoornavigation.SightManagerActivity;
 
 
 import java.util.List;
@@ -45,6 +46,10 @@ public class SightAdapter extends RecyclerView.Adapter<SightAdapter.ViewHolder> 
                 int position = holder.getAdapterPosition();
                 Sight sight = sightList.get(position);
                 Toast.makeText(v.getContext(),"name:" + sight.getName(),Toast.LENGTH_SHORT).show();
+                int sightId = sight.getId();
+                Intent intent = new Intent(v.getContext(), SightManagerActivity.class);
+                intent.putExtra("sightId",sightId);
+                v.getContext().startActivity(intent);
                 //点击景区跳转
 //                int id = sight.getId();
 //                Intent intent = new Intent(v.getContext(),ShowActivity.class);

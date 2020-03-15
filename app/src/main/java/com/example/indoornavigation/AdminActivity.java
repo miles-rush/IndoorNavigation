@@ -8,7 +8,9 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import okhttp3.Call;
 import okhttp3.Response;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import com.example.adapter.SightAdapter;
@@ -54,6 +56,14 @@ public class AdminActivity extends AppCompatActivity {
                 loadSights();
             }
         });
+
+        addSight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AdminActivity.this, AddSightActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void initList() {
@@ -70,7 +80,7 @@ public class AdminActivity extends AppCompatActivity {
             public void onResponse(Call call, Response response) throws IOException {
                 String sightsData = response.body().string();
                 System.out.println(sightsData);
-                sightList = GsonUtil.getSightJson(sightsData);
+                sightList = GsonUtil.getSightsJson(sightsData);
 
                 runOnUiThread(new Runnable() {
                     @Override
@@ -80,14 +90,7 @@ public class AdminActivity extends AppCompatActivity {
                         swipeRefreshLayout.setRefreshing(false);
                     }
                 });
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        initList();
-//                    }
-//                });
             }
-
             @Override
             public void onFailure(Call call, IOException e) {
                 Toast.makeText(AdminActivity.this,"网络错误",Toast.LENGTH_SHORT).show();

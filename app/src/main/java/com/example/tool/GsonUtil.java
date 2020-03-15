@@ -14,9 +14,15 @@ public class GsonUtil {
         return responseCode;
     }
 
-    public static List<Sight> getSightJson(String jsonData) {
+    public static List<Sight> getSightsJson(String jsonData) {
         Gson gson = new Gson();
         List<Sight> sights = gson.fromJson(jsonData, new TypeToken<List<Sight>>(){}.getType());
         return sights;
+    }
+
+    public static Sight getSightJson(String jsonData) {
+        Gson gson = new Gson();
+        Sight sight = gson.fromJson(jsonData, new TypeToken<Sight>(){}.getType());
+        return sight;
     }
 }
