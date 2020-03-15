@@ -11,6 +11,8 @@ import okhttp3.Response;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.adapter.SightAdapter;
@@ -33,6 +35,8 @@ public class AdminActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private FloatingActionButton addSight;
+
+    private ImageView userManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +53,7 @@ public class AdminActivity extends AppCompatActivity {
         addSight = findViewById(R.id.add_sight);
         recyclerView = findViewById(R.id.sight_list);
         swipeRefreshLayout = findViewById(R.id.sight_swipe);
+        userManager = findViewById(R.id.user_manager_in);
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -61,6 +66,16 @@ public class AdminActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AdminActivity.this, AddSightActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        userManager.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AdminActivity.this, UserManagerActivity.class);
+                Integer userId = getIntent().getIntExtra("userId", 0);
+                intent.putExtra("userId", userId); //传递用户ID
                 startActivity(intent);
             }
         });

@@ -188,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
                         }else if (responseCode.getCode() == "2") {//管理员
                             check(accountText, passwordText);
                             Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+                            intent.putExtra("userId", responseCode.getAdditionalId()); //登录后传递该账户的ID
                             startActivity(intent);
                         }
                     }

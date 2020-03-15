@@ -5,6 +5,8 @@ public class ResponseCode {
     private String code;
     private String info;
 
+    private Integer additionalId;
+
     public String getCode() {
         return code;
     }
@@ -19,5 +21,13 @@ public class ResponseCode {
 
     public void setInfo(String info) {
         this.info = info;
+    }
+
+    public Integer getAdditionalId() {
+        return additionalId;
+    }
+
+    public void setAdditionalId(Integer additionalId) {
+        this.additionalId = additionalId;
     }
 }

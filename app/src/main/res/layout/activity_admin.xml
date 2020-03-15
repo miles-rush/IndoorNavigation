@@ -29,12 +29,13 @@
                         android:textSize="20dp"
                         android:text="景区列表"/>
                     <ImageView
+                        android:id="@+id/user_manager_in"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
                         android:layout_marginRight="8dp"
                         android:layout_marginTop="12dp"
-                        android:src="@drawable/bell"/>
+                        android:src="@drawable/icon_user"/>
                 </RelativeLayout>
                 <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                     android:id="@+id/sight_swipe"
