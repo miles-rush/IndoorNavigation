@@ -50,11 +50,6 @@ public class SightAdapter extends RecyclerView.Adapter<SightAdapter.ViewHolder> 
                 Intent intent = new Intent(v.getContext(), SightManagerActivity.class);
                 intent.putExtra("sightId",sightId);
                 v.getContext().startActivity(intent);
-                //点击景区跳转
-//                int id = sight.getId();
-//                Intent intent = new Intent(v.getContext(),ShowActivity.class);
-//                intent.putExtra("id",id);
-//                v.getContext().startActivity(intent);
             }
         });
         return holder;

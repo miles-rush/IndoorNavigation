@@ -1,7 +1,10 @@
 package com.example.indoornavigation;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.RequestBody;
@@ -14,13 +17,18 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.adapter.SightAdapter;
+import com.example.adapter.SpotAdapter;
 import com.example.bean.ResponseCode;
 import com.example.bean.Sight;
+import com.example.bean.Spot;
 import com.example.tool.GsonUtil;
 import com.example.tool.HttpUtil;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SightManagerActivity extends AppCompatActivity {
     private ImageView back;
@@ -34,7 +42,11 @@ public class SightManagerActivity extends AppCompatActivity {
     private FloatingActionButton updateSight;
     private FloatingActionButton deleteSight;
 
+    private SwipeRefreshLayout spotSwipeRefreshLayout;
     private RecyclerView spotRecyclerView;
+    private LinearLayoutManager manager;
+    private SpotAdapter spotAdapter;
+    private List<Spot> spotList = new ArrayList<>();
 
     private Integer sightId;
     private Sight sight;
@@ -45,7 +57,7 @@ public class SightManagerActivity extends AppCompatActivity {
         init();
         //初始数据加载
         getSightInfo();
-        //
+        //事件初始化
         initButtons();
     }
 
@@ -63,6 +75,27 @@ public class SightManagerActivity extends AppCompatActivity {
         updateSight = findViewById(R.id.update_sight);
         deleteSight = findViewById(R.id.delete_sight);
 
+        spotRecyclerView = findViewById(R.id.sight_spot_list);
+        spotSwipeRefreshLayout = findViewById(R.id.sight_spot_swipe);
+
+        spotSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                //刷新景点列表
+                getSightInfo();
+            }
+        });
+    }
+
+    //景区下景点信息列表显示
+    private void initSpotList() {
+        spotList = sight.getSpots();
+
+        manager = new LinearLayoutManager(this);
+        spotRecyclerView.setLayoutManager(manager);
+        spotAdapter = new SpotAdapter(spotList);
+        spotRecyclerView.setAdapter(spotAdapter);
+        spotRecyclerView.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
     }
 
     private void getSightInfo() {
@@ -74,10 +107,13 @@ public class SightManagerActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        //基础信息的显示
                         name.setText(sight.getName());
                         introduce.setText(sight.getIntroduce());
-
-                        //加载数据后使得不可编辑 不可提交
+                        //景区下景点列表显示
+                        initSpotList();
+                        //加载数据后使得不可编辑 刷新状态清除
+                        spotSwipeRefreshLayout.setRefreshing(false);
                         name.setEnabled(false);
                         introduce.setEnabled(false);
                     }
@@ -95,7 +131,7 @@ public class SightManagerActivity extends AppCompatActivity {
         addSpot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                //
             }
         });
         //更新景区信息

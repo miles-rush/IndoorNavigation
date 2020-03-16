@@ -68,7 +68,7 @@
                     android:id="@+id/manager_sight_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-
+                    android:textColor="@color/colorBlack"
                     android:layout_marginTop="10dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="10dp"
@@ -90,6 +90,7 @@
                     android:id="@+id/manager_sight_coordinate"
                     android:layout_width="280dp"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/colorBlack"
                     android:layout_marginTop="10dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="10dp"
@@ -121,14 +122,24 @@
                     android:layout_marginTop="10dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="10dp"
+                    android:textColor="@color/colorBlack"
                     android:gravity="top"
                     android:minLines="5"
                     android:hint="景区整体介绍"/>
             </LinearLayout>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:layout_marginLeft="5dp"
+                android:textStyle="bold"
+                android:text="景点列表:">
+            </TextView>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
                 android:orientation="horizontal">
                 <ImageView
                     android:layout_marginTop="10dp"
@@ -136,13 +147,27 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/spot_list"/>
-
-                <androidx.recyclerview.widget.RecyclerView
+                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                    android:id="@+id/sight_spot_swipe"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp">
+                    android:layout_height="115dp">
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/sight_spot_list"
+                        android:scrollbarSize="5dp"
+                        android:scrollbars="vertical"
+                        android:scrollbarThumbVertical="@color/colorBlack"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginRight="5dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="115dp"
+                        android:layout_marginLeft="5dp">
+                    </androidx.recyclerview.widget.RecyclerView>
 
-                </androidx.recyclerview.widget.RecyclerView>
+                </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
             </LinearLayout>
         </LinearLayout>
 
