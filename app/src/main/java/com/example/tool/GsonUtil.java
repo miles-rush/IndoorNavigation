@@ -2,6 +2,7 @@ package com.example.tool;
 
 import com.example.bean.ResponseCode;
 import com.example.bean.Sight;
+import com.example.bean.Spot;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -24,5 +25,11 @@ public class GsonUtil {
         Gson gson = new Gson();
         Sight sight = gson.fromJson(jsonData, new TypeToken<Sight>(){}.getType());
         return sight;
+    }
+
+    public static Spot getSpotJson(String jsonData) {
+        Gson gson = new Gson();
+        Spot spot = gson.fromJson(jsonData, new TypeToken<Spot>(){}.getType());
+        return spot;
     }
 }

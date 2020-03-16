@@ -131,7 +131,9 @@ public class SightManagerActivity extends AppCompatActivity {
         addSpot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //
+                Intent intent = new Intent(SightManagerActivity.this, AddSpotActivity.class);
+                intent.putExtra("sightId", sightId);
+                startActivity(intent);
             }
         });
         //更新景区信息

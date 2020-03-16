@@ -9,8 +9,10 @@ import android.widget.Toast;
 
 import com.example.bean.Sight;
 import com.example.bean.Spot;
+import com.example.indoornavigation.AddSpotActivity;
 import com.example.indoornavigation.R;
 import com.example.indoornavigation.SightManagerActivity;
+import com.example.indoornavigation.SpotManagerActivity;
 
 import java.util.List;
 
@@ -46,10 +48,10 @@ public class SpotAdapter extends RecyclerView.Adapter<SpotAdapter.ViewHolder> {
                 int position = holder.getAdapterPosition();
                 Spot spot = spotList.get(position);
                 Toast.makeText(v.getContext(),"name:" + spot.getName(),Toast.LENGTH_SHORT).show();
-//                int spotId = spot.getId();
-//                Intent intent = new Intent(v.getContext(), SightManagerActivity.class);
-//                intent.putExtra("spotId",spotId);
-//                v.getContext().startActivity(intent);
+                int spotId = spot.getId();
+                Intent intent = new Intent(v.getContext(), SpotManagerActivity.class);
+                intent.putExtra("spotId",spotId);
+                v.getContext().startActivity(intent);
             }
         });
         return holder;
