@@ -77,7 +77,7 @@ public class AddSightActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast.makeText(AddSightActivity.this,responseCode.getInfo(),Toast.LENGTH_SHORT).show();
-                        if (responseCode.getCode() == "1") {
+                        if (responseCode.getCode().equals("1")) {
                             //添加成功返回
                             finish();
                         }

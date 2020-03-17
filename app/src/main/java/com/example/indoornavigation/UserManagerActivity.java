@@ -142,7 +142,7 @@ public class UserManagerActivity extends AppCompatActivity {
                                             }
                                         });
                                         //需要修改自动登录保存的文件
-                                        if (responseCode.getCode() == "1") {
+                                        if (responseCode.getCode().equals("1")) {
                                             editor =preferences.edit();
                                             editor.remove("password");
                                             editor.putString("password",newPasswordText);

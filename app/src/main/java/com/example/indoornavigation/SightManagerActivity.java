@@ -185,7 +185,7 @@ public class SightManagerActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast.makeText(SightManagerActivity.this, responseCode.getInfo(),Toast.LENGTH_SHORT).show();
-                        if (responseCode.getCode() == "1") {
+                        if (responseCode.getCode().equals("1")) {
                             //更新成功 隐藏按钮 设置不可编辑
                             name.setEnabled(false);
                             introduce.setEnabled(false);
@@ -211,7 +211,7 @@ public class SightManagerActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast.makeText(SightManagerActivity.this, responseCode.getInfo(),Toast.LENGTH_SHORT).show();
-                        if (responseCode.getCode() == "1") {//删除后关闭
+                        if (responseCode.getCode().equals("1")) {//删除后关闭
                             finish();
                         }
                     }

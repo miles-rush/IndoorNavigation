@@ -11,6 +11,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void run() {
                                 Toast.makeText(MainActivity.this, responseCode.getInfo(),Toast.LENGTH_SHORT).show();
-                                if (responseCode.getCode() == "1") {//注册后跳转
+                                if (responseCode.getCode().equals("1")) {//注册后跳转
 
                                 }
                             }
@@ -181,11 +182,11 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast.makeText(MainActivity.this, responseCode.getInfo(),Toast.LENGTH_SHORT).show();
-                        if (responseCode.getCode() == "1") {//普通用户
+                        if (responseCode.getCode().equals("1")) {//普通用户
                             check(accountText, passwordText);
                             //跳转
 
-                        }else if (responseCode.getCode() == "2") {//管理员
+                        }else if (responseCode.getCode().equals("2")) {//管理员
                             check(accountText, passwordText);
                             Intent intent = new Intent(MainActivity.this, AdminActivity.class);
                             intent.putExtra("userId", responseCode.getAdditionalId()); //登录后传递该账户的ID

@@ -1,5 +1,6 @@
 package com.example.indoornavigation;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import okhttp3.Call;
@@ -7,8 +8,17 @@ import okhttp3.FormBody;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import android.annotation.TargetApi;
+import android.content.ContentUris;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -67,6 +77,42 @@ public class AddSpotActivity extends AppCompatActivity {
                 saveSpot();
             }
         });
+
+        openFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openVoiceFile();
+            }
+        });
+    }
+
+    public static final int CHOOSE_AUDIO = 1;
+    private void openVoiceFile() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("audio/*");
+        startActivityForResult(intent,CHOOSE_AUDIO);
+    }
+
+    private String audioPath;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case CHOOSE_AUDIO:
+                if (requestCode == RESULT_OK) {
+                    String audioPath = null;
+                    if (Build.VERSION.SDK_INT >= 19) {
+                        audioPath = handleImageOnKitKat(data);
+                    } else {
+                        audioPath = handleImageBeforeKitKat(data);
+                    }
+                    Toast.makeText(AddSpotActivity.this, "" + audioPath, Toast.LENGTH_SHORT).show();
+                    Log.d("test", "onActivityResult: " + audioPath);
+                }
+                break;
+            default:
+                break;
+        }
     }
 
     private void saveSpot() {
@@ -87,7 +133,7 @@ public class AddSpotActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast.makeText(AddSpotActivity.this,responseCode.getInfo(),Toast.LENGTH_SHORT).show();
-                        if (responseCode.getCode() == "1") {
+                        if (responseCode.getCode().equals("1")) {
                             //添加成功返回
                             AlertDialog.Builder dialog = new AlertDialog.Builder(AddSpotActivity.this);
                             dialog.setTitle("信息:");
@@ -113,5 +159,53 @@ public class AddSpotActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+
+
+    //文件路径解析
+    @TargetApi(19)
+    private String handleImageOnKitKat(Intent data) {
+        String audioPath = null;
+        Uri uri = data.getData();
+        Log.d("TAG", "handleImageOnKitKat: uri is " + uri);
+        if (DocumentsContract.isDocumentUri(this, uri)) {
+            // 如果是document类型的Uri，则通过document id处理
+            String docId = DocumentsContract.getDocumentId(uri);
+            if("com.android.providers.media.documents".equals(uri.getAuthority())) {
+                String id = docId.split(":")[1]; // 解析出数字格式的id
+                String selection = MediaStore.Audio.Media._ID + "=" + id;
+                audioPath = getAudioPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, selection);
+            } else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
+                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(docId));
+                audioPath = getAudioPath(contentUri, null);
+            }
+        } else if ("content".equalsIgnoreCase(uri.getScheme())) {
+            // 如果是content类型的Uri，则使用普通方式处理
+            audioPath = getAudioPath(uri, null);
+        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            // 如果是file类型的Uri，直接获取图片路径即可
+            audioPath = uri.getPath();
+        }
+        return audioPath; // 根据图片路径显示图片
+    }
+
+    private String handleImageBeforeKitKat(Intent data) {
+        Uri uri = data.getData();
+        String audioPath = getAudioPath(uri, null);
+        return audioPath;
+    }
+
+
+    private String getAudioPath(Uri uri, String selection) {
+        String path = null;
+        Cursor cursor = getContentResolver().query(uri,null,selection,null,null);
+        if (cursor != null){
+            if (cursor.moveToFirst()){
+                path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                //path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+            }
+            cursor.close();
+        }
+        return path;
     }
 }
