@@ -138,7 +138,6 @@
                 android:layout_marginLeft="20dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginRight="10dp"
-                android:enabled="false"
                 android:hint="关联介绍语音" />
 
             <ImageView
@@ -161,6 +160,13 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/icon_open_file"/>
         </LinearLayout>
+        <TextView
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="25dp"
+            android:id="@+id/file_show_path"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

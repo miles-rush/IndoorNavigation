@@ -5,6 +5,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import okhttp3.Call;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
@@ -22,12 +24,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.bean.ResponseCode;
 import com.example.tool.GsonUtil;
 import com.example.tool.HttpUtil;
 
+import java.io.File;
 import java.io.IOException;
 
 public class AddSpotActivity extends AppCompatActivity {
@@ -41,8 +45,10 @@ public class AddSpotActivity extends AppCompatActivity {
     private EditText introduce;
     private EditText voicePath;
 
+    private TextView showFilePath;
+
     private Integer sightId;
-    private Integer spotId;
+    private Integer spotId = -1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +67,8 @@ public class AddSpotActivity extends AppCompatActivity {
         coordinate = findViewById(R.id.input_spot_coordinate);
         introduce = findViewById(R.id.input_spot_introduce);
         voicePath = findViewById(R.id.music_path_text);
+
+        showFilePath = findViewById(R.id.file_show_path);
 
         sightId = getIntent().getIntExtra("sightId",0);
 
@@ -86,28 +94,46 @@ public class AddSpotActivity extends AppCompatActivity {
         });
     }
 
+    //打开文件管理器 上传语音资源
     public static final int CHOOSE_AUDIO = 1;
     private void openVoiceFile() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("audio/*");
-        startActivityForResult(intent,CHOOSE_AUDIO);
+        if (!spotIdJudge()) {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(AddSpotActivity.this);
+            dialog.setTitle("信息:");
+            dialog.setMessage("请先保存当前景点信息！");
+            dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
+        } else {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("audio/*");
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            startActivityForResult(intent,CHOOSE_AUDIO);
+        }
+
     }
 
+    //资源管理器响应函数
     private String audioPath;
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case CHOOSE_AUDIO:
-                if (requestCode == RESULT_OK) {
-                    String audioPath = null;
+                if (resultCode == RESULT_OK) {
+                    String path = null;
                     if (Build.VERSION.SDK_INT >= 19) {
-                        audioPath = handleImageOnKitKat(data);
+                        path = handleImageOnKitKat(data);
                     } else {
-                        audioPath = handleImageBeforeKitKat(data);
+                        path = handleImageBeforeKitKat(data);
                     }
-                    Toast.makeText(AddSpotActivity.this, "" + audioPath, Toast.LENGTH_SHORT).show();
-                    Log.d("test", "onActivityResult: " + audioPath);
+                    audioPath = path;
+                    showFilePath.setText("路径:" + audioPath);
+                    beforeVoiceSave();//加一个选定文件后是否上传的选项
                 }
                 break;
             default:
@@ -115,6 +141,83 @@ public class AddSpotActivity extends AppCompatActivity {
         }
     }
 
+    //当前景点未保存前 禁止上传语音
+    private boolean spotIdJudge() {
+        if (spotId == -1) {
+            return false;
+        }
+        return true;
+    }
+
+    //语音上传的确认
+    private void beforeVoiceSave() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(AddSpotActivity.this);
+        dialog.setTitle("信息:");
+        dialog.setMessage("是否上传该语音文件！");
+        dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                saveVoice();
+            }
+        });
+        dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    //调用上传音乐接口
+    private void saveVoice() {
+        File file = new File(audioPath);
+        String fileName = voicePath.getText().toString().trim() + ".mp3";
+        if (fileName.equals("")) {
+            fileName = "无标题.mp3";
+        }
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("id",spotId.toString())
+                .addFormDataPart("file", fileName, RequestBody.create(MediaType.parse("audio/*"),file))
+                .build();
+        HttpUtil.sendOkHttpPostRequest("/voice/upload", requestBody, new okhttp3.Callback() {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                final String responseData = response.body().string();
+                final ResponseCode responseCode = GsonUtil.getResponseJson(responseData);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(AddSpotActivity.this,responseCode.getInfo(),Toast.LENGTH_SHORT).show();
+                        if (responseCode.getCode().equals("1")) {
+                            AlertDialog.Builder dialog = new AlertDialog.Builder(AddSpotActivity.this);
+                            dialog.setTitle("信息:");
+                            dialog.setMessage("介绍语音上传关联成功！");
+                            dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                            dialog.show();
+                        }
+                    }
+                });
+            }
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(AddSpotActivity.this,"网络错误",Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+    }
+
+    //新增景点 返回景点的ID
     private void saveSpot() {
         String nameText = name.getText().toString().trim();
         String coordinateText = coordinate.getText().toString().trim();
@@ -134,6 +237,8 @@ public class AddSpotActivity extends AppCompatActivity {
                     public void run() {
                         Toast.makeText(AddSpotActivity.this,responseCode.getInfo(),Toast.LENGTH_SHORT).show();
                         if (responseCode.getCode().equals("1")) {
+                            //设置提交按钮不可见
+                            done.setVisibility(View.INVISIBLE);
                             //添加成功返回
                             AlertDialog.Builder dialog = new AlertDialog.Builder(AddSpotActivity.this);
                             dialog.setTitle("信息:");
@@ -145,6 +250,8 @@ public class AddSpotActivity extends AppCompatActivity {
                                 }
                             });
                             dialog.show();
+                            //保存返回的ID 用于音频添加
+                            spotId = responseCode.getAdditionalId();
                         }
                     }
                 });
