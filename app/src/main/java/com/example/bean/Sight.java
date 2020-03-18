@@ -9,6 +9,8 @@ public class Sight {
     private String coordinate;
 
     private List<Spot> spots;
+    private List<Point> points;
+
     public Sight() {}
 
     public Integer getId() {
@@ -49,5 +51,13 @@ public class Sight {
 
     public void setSpots(List<Spot> spots) {
         this.spots = spots;
+    }
+
+    public List<Point> getPoints() {
+        return points;
+    }
+
+    public void setPoints(List<Point> points) {
+        this.points = points;
     }
 }

@@ -11,13 +11,16 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import android.annotation.TargetApi;
+import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -30,6 +33,7 @@ import android.widget.Toast;
 import com.example.bean.ResponseCode;
 import com.example.tool.GsonUtil;
 import com.example.tool.HttpUtil;
+import com.example.tool.MusicService;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,14 +51,44 @@ public class AddSpotActivity extends AppCompatActivity {
 
     private TextView showFilePath;
 
+    private ImageView mediaStart;
+    private ImageView mediaStop;
+    private ImageView voiceUnDone;
+    private ImageView voiceDone;
+    private TextView mediaText;
+
     private Integer sightId;
     private Integer spotId = -1;
+
+    private MusicService.PlayMusicBinder playMusicBinder;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_spot);
         init();
+
+        //音乐播放服务
+        Intent intent = new Intent(AddSpotActivity.this, MusicService.class);
+        bindService(intent, connection, BIND_AUTO_CREATE);
     }
+
+    //设置音乐路径
+    private void initMusicPlay() {
+        playMusicBinder.stop();
+        playMusicBinder.init(audioPath);
+    }
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            playMusicBinder = (MusicService.PlayMusicBinder) service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
     private void init() {
         back = findViewById(R.id.add_spot_back);
@@ -70,26 +104,85 @@ public class AddSpotActivity extends AppCompatActivity {
 
         showFilePath = findViewById(R.id.file_show_path);
 
+        mediaStart = findViewById(R.id.voice_start);
+        mediaStop = findViewById(R.id.voice_stop);
+        voiceUnDone = findViewById(R.id.voice_undone);
+        voiceDone = findViewById(R.id.voice_done);
+        mediaText = findViewById(R.id.media_text);
+
+
         sightId = getIntent().getIntExtra("sightId",0);
 
+        //关闭当前页面
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //释放资源
+                playMusicBinder.stop();
                 finish();
             }
         });
-
+        //新增景点信息
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 saveSpot();
             }
         });
-
+        //打开资源管理器 选择音频文件
+        //显示底部操作栏
         openFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openVoiceFile();
+            }
+        });
+        //上传当前音频文件
+        voiceDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                beforeVoiceSave();//加一个选定文件后是否上传的选项
+            }
+        });
+        //清除当前保存的音频路径 隐藏底部栏
+        voiceUnDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                audioPath = null;
+                showFilePath.setText("");
+
+                voiceDone.setVisibility(View.INVISIBLE);
+                voiceUnDone.setVisibility(View.INVISIBLE);
+                mediaStart.setVisibility(View.INVISIBLE);
+                mediaStop.setVisibility(View.INVISIBLE);
+
+                playMusicBinder.stop();
+            }
+        });
+
+        //初始化音乐操作
+        initMusicPlayButtons();
+
+    }
+
+    private void initMusicPlayButtons() {
+        mediaStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playMusicBinder.start();
+                mediaStart.setVisibility(View.INVISIBLE);
+                mediaStop.setVisibility(View.VISIBLE);
+                mediaText.setText("状态:播放中");
+            }
+        });
+
+        mediaStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playMusicBinder.pause();
+                mediaStop.setVisibility(View.INVISIBLE);
+                mediaStart.setVisibility(View.VISIBLE);
+                mediaText.setText("状态:暂停");
             }
         });
     }
@@ -114,7 +207,6 @@ public class AddSpotActivity extends AppCompatActivity {
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             startActivityForResult(intent,CHOOSE_AUDIO);
         }
-
     }
 
     //资源管理器响应函数
@@ -133,12 +225,19 @@ public class AddSpotActivity extends AppCompatActivity {
                     }
                     audioPath = path;
                     showFilePath.setText("路径:" + audioPath);
-                    beforeVoiceSave();//加一个选定文件后是否上传的选项
+                    initMusicPlay();
+                    showBottomTools(); //路径获取后 显示底部操作栏
                 }
                 break;
             default:
                 break;
         }
+    }
+    //选定音频文件后 解放底部操作栏
+    private void showBottomTools() {
+        mediaStart.setVisibility(View.VISIBLE);
+        voiceUnDone.setVisibility(View.VISIBLE);
+        voiceDone.setVisibility(View.VISIBLE);
     }
 
     //当前景点未保存前 禁止上传语音
@@ -159,7 +258,7 @@ public class AddSpotActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 saveVoice();
             }
-        });
+        });//在这里上传语音
         dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -172,14 +271,15 @@ public class AddSpotActivity extends AppCompatActivity {
     //调用上传音乐接口
     private void saveVoice() {
         File file = new File(audioPath);
-        String fileName = voicePath.getText().toString().trim() + ".mp3";
-        if (fileName.equals("")) {
-            fileName = "无标题.mp3";
+        String audioFileName = voicePath.getText().toString().trim();
+        if (audioFileName.equals("")) {
+            audioFileName = "NO_NAME";
         }
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
+                .addFormDataPart("name",audioFileName)
                 .addFormDataPart("id",spotId.toString())
-                .addFormDataPart("file", fileName, RequestBody.create(MediaType.parse("audio/*"),file))
+                .addFormDataPart("file", audioFileName + ".mp3", RequestBody.create(MediaType.parse("audio/*"),file))
                 .build();
         HttpUtil.sendOkHttpPostRequest("/voice/upload", requestBody, new okhttp3.Callback() {
             @Override
@@ -252,6 +352,8 @@ public class AddSpotActivity extends AppCompatActivity {
                             dialog.show();
                             //保存返回的ID 用于音频添加
                             spotId = responseCode.getAdditionalId();
+                            name.setEnabled(false);
+                            introduce.setEnabled(false);
                         }
                     }
                 });
@@ -301,7 +403,6 @@ public class AddSpotActivity extends AppCompatActivity {
         String audioPath = getAudioPath(uri, null);
         return audioPath;
     }
-
 
     private String getAudioPath(Uri uri, String selection) {
         String path = null;

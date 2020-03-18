@@ -149,16 +149,17 @@
                     android:hint="关联介绍语音" />
 
                 <ImageView
-                    android:id="@+id/manager_voice_in"
+                    android:id="@+id/manager_voice_edit"
                     android:layout_marginTop="10dp"
                     android:layout_marginRight="5dp"
                     android:layout_marginLeft="5dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/icon_voice"/>
+                    android:src="@drawable/icon_voice_edit"/>
 
                 <ImageView
                     android:id="@+id/manager_open_voice_file"
+                    android:visibility="invisible"
                     android:layout_marginTop="10dp"
                     android:layout_marginRight="5dp"
                     android:layout_marginLeft="5dp"
@@ -167,8 +168,62 @@
                     android:src="@drawable/icon_open_file"/>
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/manager_local_voice_path"
+                android:layout_margin="5dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <RelativeLayout
+                android:layout_marginTop="50dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:id="@+id/manager_voice_undone"
+                    android:layout_margin="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:visibility="invisible"
+                    android:src="@drawable/icon_undone"/>
+                <ImageView
+                    android:id="@+id/manager_voice_start"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:visibility="invisible"
+                    android:src="@drawable/icon_start"/>
+                <ImageView
+                    android:id="@+id/manager_voice_stop"
+                    android:visibility="invisible"
+                    android:src="@drawable/icon_stop"
+                    android:layout_centerInParent="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <ImageView
+                    android:id="@+id/manager_voice_done"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:visibility="invisible"
+                    android:layout_alignParentRight="true"
+                    android:src="@drawable/icon_done"/>
+            </RelativeLayout>
+            <TextView
+                android:id="@+id/manager_media_text"
+                android:layout_margin="5dp"
+                android:gravity="center_horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
         </LinearLayout>
+
         <RelativeLayout
+            android:id="@+id/bottom_floating_buttons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"

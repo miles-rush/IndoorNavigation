@@ -1,21 +1,39 @@
 package com.example.indoornavigation;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import android.annotation.TargetApi;
+import android.content.ComponentName;
+import android.content.ContentUris;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.bean.ResponseCode;
 import com.example.bean.Spot;
+import com.example.bean.Voice;
 import com.example.tool.GsonUtil;
 import com.example.tool.HttpUtil;
+import com.example.tool.MusicService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
@@ -24,26 +42,57 @@ public class SpotManagerActivity extends AppCompatActivity {
     private ImageView back;
     private ImageView done;
 
-    private ImageView recordVoice;
+    private ImageView voiceEdit;
     private ImageView openFile;
 
     private EditText name;
     private EditText coordinate;
     private EditText introduce;
+    private EditText voiceName;
 
     private FloatingActionButton updateSpot;
     private FloatingActionButton deleteSpot;
 
+    private ImageView mediaStart;
+    private ImageView mediaStop;
+    private ImageView voiceUnDone;
+    private ImageView voiceDone;
+    private TextView mediaText;
+    private TextView showFilePath;
+
     private Integer spotId;
     private Spot spot;
 
+    private String voiceOnlineUrl;//网络音频地址
+    private String audioPath;//本地音频地址
+    private String playMusicPath;//当前播放音频地址
+
+
+
+    private MusicService.PlayMusicBinder playMusicBinder;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_spot_manager);
         init();
         getSightInfo();
+
+        //音乐播放服务
+        Intent intent = new Intent(SpotManagerActivity.this, MusicService.class);
+        bindService(intent, connection, BIND_AUTO_CREATE);
     }
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            playMusicBinder = (MusicService.PlayMusicBinder) service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
     private void init() {
         spotId = getIntent().getIntExtra("spotId",0);
@@ -53,15 +102,36 @@ public class SpotManagerActivity extends AppCompatActivity {
         name = findViewById(R.id.manager_spot_name);
         coordinate = findViewById(R.id.manager_spot_coordinate);
         introduce = findViewById(R.id.manager_spot_introduce);
+        voiceName = findViewById(R.id.manager_music_path_text);
 
         updateSpot = findViewById(R.id.update_spot);
         deleteSpot = findViewById(R.id.delete_spot);
 
-        recordVoice = findViewById(R.id.manager_voice_in);
+        voiceEdit = findViewById(R.id.manager_voice_edit);
         openFile = findViewById(R.id.manager_open_voice_file);
+
+        mediaStart = findViewById(R.id.manager_voice_start);
+        mediaStop = findViewById(R.id.manager_voice_stop);
+        voiceUnDone = findViewById(R.id.manager_voice_undone);
+        voiceDone = findViewById(R.id.manager_voice_done);
+        mediaText = findViewById(R.id.manager_media_text);
+        showFilePath = findViewById(R.id.manager_local_voice_path);
+
+        //打开文件 默认唤出工具栏
+        openFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("audio/*");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                startActivityForResult(intent,CHOOSE_AUDIO);
+            }
+        });
+
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                playMusicBinder.stop();
                 finish();
             }
         });
@@ -87,6 +157,82 @@ public class SpotManagerActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 deleteSpot();
+            }
+        });
+
+        initMusicPlayButtons();
+
+        //底部栏 提交按钮 这里是更新音频
+        voiceDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        //底部栏取消按钮
+        voiceUnDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                voiceDone.setVisibility(View.INVISIBLE);
+                voiceUnDone.setVisibility(View.INVISIBLE);
+                mediaStart.setVisibility(View.INVISIBLE);
+                mediaStop.setVisibility(View.INVISIBLE);
+                playMusicBinder.stop();
+            }
+        });
+
+        //编辑按钮事件
+        voiceEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(SpotManagerActivity.this);
+                dialog.setTitle("信息:");
+                dialog.setMessage("是否唤起工具栏,进入音频编辑状态！");
+                dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        voiceName.setEnabled(true);
+                        openFile.setVisibility(View.VISIBLE);
+                        showBottomTools();
+                    }
+                });
+                dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
+            }
+        });
+
+    }
+
+    private void showBottomTools() {
+        mediaStart.setVisibility(View.VISIBLE);
+        voiceUnDone.setVisibility(View.VISIBLE);
+        voiceDone.setVisibility(View.VISIBLE);
+    }
+
+    private void initMusicPlayButtons() {
+        mediaStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playMusicBinder.start();
+                mediaStart.setVisibility(View.INVISIBLE);
+                mediaStop.setVisibility(View.VISIBLE);
+                mediaText.setText("状态:播放中");
+            }
+        });
+
+        mediaStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playMusicBinder.pause();
+                mediaStop.setVisibility(View.INVISIBLE);
+                mediaStart.setVisibility(View.VISIBLE);
+                mediaText.setText("状态:暂停");
             }
         });
     }
@@ -135,7 +281,12 @@ public class SpotManagerActivity extends AppCompatActivity {
                         //基础信息的显示
                         name.setText(spot.getName());
                         introduce.setText(spot.getIntroduce());
-
+                        if (spot.getVoices() != null) {
+                            Voice voice = spot.getVoices().get(0);
+                            voiceName.setText(voice.getName());
+                            voiceOnlineUrl = HttpUtil.RESOURCE_URL + voice.getResourcesPath();
+                            playMusicPath = voiceOnlineUrl;//显示景点信息后 初始化音乐播发器中的URL为在线资源
+                        }
                     }
                 });
             }
@@ -157,6 +308,7 @@ public class SpotManagerActivity extends AppCompatActivity {
                     public void run() {
                         Toast.makeText(SpotManagerActivity.this, responseCode.getInfo(),Toast.LENGTH_SHORT).show();
                         if (responseCode.getCode().equals("1")) {//删除后关闭
+                            playMusicBinder.stop();
                             finish();
                         }
                     }
@@ -167,5 +319,90 @@ public class SpotManagerActivity extends AppCompatActivity {
                 Toast.makeText(SpotManagerActivity.this,"网络错误",Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case CHOOSE_AUDIO:
+                if (resultCode == RESULT_OK) {
+                    String path = null;
+                    if (Build.VERSION.SDK_INT >= 19) {
+                        path = handleImageOnKitKat(data);
+                    } else {
+                        path = handleImageBeforeKitKat(data);
+                    }
+                    audioPath = path;
+                    showFilePath.setText("路径:" + audioPath);
+                    initMusicPlay();
+                    showBottomTools(); //路径获取后 显示底部操作栏
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    //初始化音乐播放器
+    private void initMusicPlay() {
+        playMusicBinder.stop();
+        playMusicBinder.init(playMusicPath);
+    }
+
+    //打开文件管理器 上传语音资源
+    public static final int CHOOSE_AUDIO = 1;
+    private void openVoiceFile() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("audio/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent,CHOOSE_AUDIO);
+    }
+
+    //文件路径解析
+    @TargetApi(19)
+    private String handleImageOnKitKat(Intent data) {
+        String audioPath = null;
+        Uri uri = data.getData();
+        Log.d("TAG", "handleImageOnKitKat: uri is " + uri);
+        if (DocumentsContract.isDocumentUri(this, uri)) {
+            // 如果是document类型的Uri，则通过document id处理
+            String docId = DocumentsContract.getDocumentId(uri);
+            if("com.android.providers.media.documents".equals(uri.getAuthority())) {
+                String id = docId.split(":")[1]; // 解析出数字格式的id
+                String selection = MediaStore.Audio.Media._ID + "=" + id;
+                audioPath = getAudioPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, selection);
+            } else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
+                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(docId));
+                audioPath = getAudioPath(contentUri, null);
+            }
+        } else if ("content".equalsIgnoreCase(uri.getScheme())) {
+            // 如果是content类型的Uri，则使用普通方式处理
+            audioPath = getAudioPath(uri, null);
+        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            // 如果是file类型的Uri，直接获取图片路径即可
+            audioPath = uri.getPath();
+        }
+        return audioPath; // 根据图片路径显示图片
+    }
+
+    private String handleImageBeforeKitKat(Intent data) {
+        Uri uri = data.getData();
+        String audioPath = getAudioPath(uri, null);
+        return audioPath;
+    }
+
+    private String getAudioPath(Uri uri, String selection) {
+        String path = null;
+        Cursor cursor = getContentResolver().query(uri,null,selection,null,null);
+        if (cursor != null){
+            if (cursor.moveToFirst()){
+                path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                //path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+            }
+            cursor.close();
+        }
+        return path;
     }
 }
