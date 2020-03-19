@@ -5,6 +5,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import okhttp3.Call;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
@@ -36,6 +38,7 @@ import com.example.tool.HttpUtil;
 import com.example.tool.MusicService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.File;
 import java.io.IOException;
 
 public class SpotManagerActivity extends AppCompatActivity {
@@ -63,10 +66,9 @@ public class SpotManagerActivity extends AppCompatActivity {
     private Integer spotId;
     private Spot spot;
 
-    private String voiceOnlineUrl;//网络音频地址
-    private String audioPath;//本地音频地址
-    private String playMusicPath;//当前播放音频地址
-
+    private String voiceOnlineUrl = "";//网络音频地址
+    private String localAudioPath = "";//本地音频地址
+    private String nowPlayMusicPath = "";//当前播放音频地址
 
 
     private MusicService.PlayMusicBinder playMusicBinder;
@@ -117,14 +119,11 @@ public class SpotManagerActivity extends AppCompatActivity {
         mediaText = findViewById(R.id.manager_media_text);
         showFilePath = findViewById(R.id.manager_local_voice_path);
 
-        //打开文件 默认唤出工具栏
+        //打开文件
         openFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("audio/*");
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                startActivityForResult(intent,CHOOSE_AUDIO);
+                openVoiceFile();
             }
         });
 
@@ -160,13 +159,22 @@ public class SpotManagerActivity extends AppCompatActivity {
             }
         });
 
+        //初始化音乐播放的开始和暂停
         initMusicPlayButtons();
 
-        //底部栏 提交按钮 这里是更新音频
+
+        //底部栏 提交按钮 这里是更新或是上传音频
         voiceDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                //判断本次操作是更新还是上传
+                if (voiceOnlineUrl.equals("")) {
+                    //无资源调用上传
+                    addSpotVoice();
+                }else {
+                    //有资源调用更新
+                    updateSpotVoice();
+                }
             }
         });
 
@@ -174,11 +182,7 @@ public class SpotManagerActivity extends AppCompatActivity {
         voiceUnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                voiceDone.setVisibility(View.INVISIBLE);
-                voiceUnDone.setVisibility(View.INVISIBLE);
-                mediaStart.setVisibility(View.INVISIBLE);
-                mediaStop.setVisibility(View.INVISIBLE);
-                playMusicBinder.stop();
+                releaseBottomTools();
             }
         });
 
@@ -193,8 +197,10 @@ public class SpotManagerActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         voiceName.setEnabled(true);
-                        openFile.setVisibility(View.VISIBLE);
+                        openFile.setVisibility(View.VISIBLE);//打开文件可见
+                        voiceEdit.setVisibility(View.GONE);//编辑按钮不可见 这里使用GONE去除占用空间
                         showBottomTools();
+                        initMusicPlay();//进入编辑状态后 初始化播放器
                     }
                 });
                 dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -209,6 +215,23 @@ public class SpotManagerActivity extends AppCompatActivity {
 
     }
 
+    private void releaseBottomTools() {
+        //隐藏底部栏所有UI 释放音乐播放器资源
+        voiceDone.setVisibility(View.INVISIBLE);
+        voiceUnDone.setVisibility(View.INVISIBLE);
+        mediaStart.setVisibility(View.INVISIBLE);
+        mediaStop.setVisibility(View.INVISIBLE);
+        mediaText.setText("");
+        showFilePath.setText("");
+        playMusicBinder.stop();
+
+        //退出编辑状态时 打开文件按钮隐藏 编辑按钮重现
+        openFile.setVisibility(View.GONE);
+        voiceEdit.setVisibility(View.VISIBLE);
+
+        voiceName.setEnabled(false);
+    }
+
     private void showBottomTools() {
         mediaStart.setVisibility(View.VISIBLE);
         voiceUnDone.setVisibility(View.VISIBLE);
@@ -219,10 +242,23 @@ public class SpotManagerActivity extends AppCompatActivity {
         mediaStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playMusicBinder.start();
-                mediaStart.setVisibility(View.INVISIBLE);
-                mediaStop.setVisibility(View.VISIBLE);
-                mediaText.setText("状态:播放中");
+                if (nowPlayMusicPath.equals("")) {
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(SpotManagerActivity.this);
+                    dialog.setTitle("信息:");
+                    dialog.setMessage("当前无音频文件！");
+                    dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    dialog.show();
+                } else {
+                    playMusicBinder.start();
+                    mediaStart.setVisibility(View.INVISIBLE);
+                    mediaStop.setVisibility(View.VISIBLE);
+                    mediaText.setText("状态:播放中");
+                }
             }
         });
 
@@ -282,10 +318,12 @@ public class SpotManagerActivity extends AppCompatActivity {
                         name.setText(spot.getName());
                         introduce.setText(spot.getIntroduce());
                         if (spot.getVoices() != null) {
-                            Voice voice = spot.getVoices().get(0);
-                            voiceName.setText(voice.getName());
-                            voiceOnlineUrl = HttpUtil.RESOURCE_URL + voice.getResourcesPath();
-                            playMusicPath = voiceOnlineUrl;//显示景点信息后 初始化音乐播发器中的URL为在线资源
+                            if (spot.getVoices().size() > 0) {
+                                Voice voice = spot.getVoices().get(0);
+                                voiceName.setText(voice.getName());
+                                voiceOnlineUrl = HttpUtil.RESOURCE_URL + voice.getResourcesPath();
+                                nowPlayMusicPath = voiceOnlineUrl;//显示景点信息后 初始化音乐播发器中的URL为在线资源
+                            }
                         }
                     }
                 });
@@ -321,7 +359,7 @@ public class SpotManagerActivity extends AppCompatActivity {
         });
     }
 
-
+    //唤起资源管理器后续逻辑
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -334,10 +372,11 @@ public class SpotManagerActivity extends AppCompatActivity {
                     } else {
                         path = handleImageBeforeKitKat(data);
                     }
-                    audioPath = path;
-                    showFilePath.setText("路径:" + audioPath);
+                    localAudioPath = path;
+                    showFilePath.setText("路径:" + localAudioPath);
+                    nowPlayMusicPath = localAudioPath;
                     initMusicPlay();
-                    showBottomTools(); //路径获取后 显示底部操作栏
+                    //showBottomTools(); //路径获取后 显示底部操作栏
                 }
                 break;
             default:
@@ -345,10 +384,140 @@ public class SpotManagerActivity extends AppCompatActivity {
         }
     }
 
+    //无音频时上传音频
+    private void addSpotVoice() {
+        if (localAudioPath.equals("")) {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(SpotManagerActivity.this);
+            dialog.setTitle("信息:");
+            dialog.setMessage("当前未选择本地音频文件可上传！");
+            dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
+        }else {
+            File file = new File(localAudioPath);
+            String audioFileName = voiceName.getText().toString().trim();
+            if (audioFileName.equals("")) {
+                audioFileName = "NO_NAME";
+            }
+            RequestBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("name",audioFileName)
+                    .addFormDataPart("id",spotId.toString())
+                    .addFormDataPart("file", audioFileName + ".mp3", RequestBody.create(MediaType.parse("audio/*"),file))
+                    .build();
+            HttpUtil.sendOkHttpPostRequest("/voice/upload", requestBody, new okhttp3.Callback() {
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    final String responseData = response.body().string();
+                    final ResponseCode responseCode = GsonUtil.getResponseJson(responseData);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(SpotManagerActivity.this,responseCode.getInfo(),Toast.LENGTH_SHORT).show();
+                            if (responseCode.getCode().equals("1")) {
+                                AlertDialog.Builder dialog = new AlertDialog.Builder(SpotManagerActivity.this);
+                                dialog.setTitle("信息:");
+                                dialog.setMessage("介绍语音上传关联成功！");
+                                dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                                dialog.show();
+                            }
+                            releaseBottomTools();
+                            //刷新当前景点信息
+                            getSightInfo();
+                        }
+                    });
+                }
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(SpotManagerActivity.this,"网络错误",Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    //有音频时更新该景点下的音频
+    private void updateSpotVoice() {
+        //无选择本地文件时
+        if (localAudioPath.equals("")) {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(SpotManagerActivity.this);
+            dialog.setTitle("信息:");
+            dialog.setMessage("当前未选择本地音频文件可供更新！");
+            dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
+        }else {
+            File file = new File(localAudioPath);
+            String audioFileName = voiceName.getText().toString().trim();
+            if (audioFileName.equals("")) {
+                audioFileName = "NO_NAME";
+            }
+            RequestBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("name",audioFileName)
+                    .addFormDataPart("id",spot.getVoices().get(0).getId().toString())
+                    .addFormDataPart("file", audioFileName + ".mp3", RequestBody.create(MediaType.parse("audio/*"),file))
+                    .build();
+            HttpUtil.sendOkHttpPostRequest("/voice/update", requestBody, new okhttp3.Callback() {
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    final String responseData = response.body().string();
+                    final ResponseCode responseCode = GsonUtil.getResponseJson(responseData);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(SpotManagerActivity.this,responseCode.getInfo(),Toast.LENGTH_SHORT).show();
+                            if (responseCode.getCode().equals("1")) {
+                                AlertDialog.Builder dialog = new AlertDialog.Builder(SpotManagerActivity.this);
+                                dialog.setTitle("信息:");
+                                dialog.setMessage("更新景点下音频文件成功！");
+                                dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                                dialog.show();
+                            }
+                            releaseBottomTools();
+                        }
+                    });
+                }
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(SpotManagerActivity.this,"网络错误",Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+
+        }
+    }
+
     //初始化音乐播放器
     private void initMusicPlay() {
         playMusicBinder.stop();
-        playMusicBinder.init(playMusicPath);
+        playMusicBinder.init(nowPlayMusicPath);
     }
 
     //打开文件管理器 上传语音资源

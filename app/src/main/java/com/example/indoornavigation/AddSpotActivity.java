@@ -155,6 +155,7 @@ public class AddSpotActivity extends AppCompatActivity {
                 voiceUnDone.setVisibility(View.INVISIBLE);
                 mediaStart.setVisibility(View.INVISIBLE);
                 mediaStop.setVisibility(View.INVISIBLE);
+                mediaText.setText("");
 
                 playMusicBinder.stop();
             }

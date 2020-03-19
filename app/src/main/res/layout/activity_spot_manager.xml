@@ -140,7 +140,7 @@
 
                 <EditText
                     android:id="@+id/manager_music_path_text"
-                    android:layout_width="250dp"
+                    android:layout_width="280dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
                     android:layout_marginTop="10dp"
@@ -152,17 +152,15 @@
                     android:id="@+id/manager_voice_edit"
                     android:layout_marginTop="10dp"
                     android:layout_marginRight="5dp"
-                    android:layout_marginLeft="5dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/icon_voice_edit"/>
 
                 <ImageView
                     android:id="@+id/manager_open_voice_file"
-                    android:visibility="invisible"
+                    android:visibility="gone"
                     android:layout_marginTop="10dp"
                     android:layout_marginRight="5dp"
-                    android:layout_marginLeft="5dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/icon_open_file"/>
@@ -171,7 +169,7 @@
             <TextView
                 android:id="@+id/manager_local_voice_path"
                 android:layout_margin="5dp"
-                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
