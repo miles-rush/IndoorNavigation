@@ -65,6 +65,7 @@ public class SpotManagerActivity extends AppCompatActivity {
 
     private Integer spotId;
     private Spot spot;
+    private Voice voice;
 
     private String voiceOnlineUrl = "";//网络音频地址
     private String localAudioPath = "";//本地音频地址
@@ -163,18 +164,42 @@ public class SpotManagerActivity extends AppCompatActivity {
         initMusicPlayButtons();
 
 
-        //底部栏 提交按钮 这里是更新或是上传音频
+        //底部栏 提交按钮 这里是更新或是上传音频 或是单独的音频绑定名称修改
         voiceDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //判断本次操作是更新还是上传
-                if (voiceOnlineUrl.equals("")) {
-                    //无资源调用上传
-                    addSpotVoice();
-                }else {
-                    //有资源调用更新
-                    updateSpotVoice();
-                }
+                AlertDialog.Builder dialog = new AlertDialog.Builder(SpotManagerActivity.this);
+                dialog.setTitle("信息:");
+                dialog.setMessage("是否保存本次编辑内容！");
+                dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //判断本次操作是更新还是上传
+                        if (voiceOnlineUrl.equals("")) {
+                            //无资源调用上传
+                            addSpotVoice();
+                        }else {
+                            //有资源调用更新 没有添加本地资源 但是名字变动 调用名字更新接口
+                            if (localAudioPath.equals("")) {
+                                String newName = voiceName.getText().toString().trim();
+                                if (!newName.equals(voice.getName())) {//只有名字发生了变化
+                                    beforeUpdateVoiceName();
+                                } else {
+                                    updateSpotVoice();
+                                }
+                            }else {
+                                updateSpotVoice();
+                            }
+                        }
+                    }
+                });
+                dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
             }
         });
 
@@ -213,6 +238,65 @@ public class SpotManagerActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void beforeUpdateVoiceName() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(SpotManagerActivity.this);
+        dialog.setTitle("信息:");
+        dialog.setMessage("是否更新该音频的命名！");
+        dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                updateVoiceName();
+            }
+        });
+        dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    private void updateVoiceName() {
+        final RequestBody requestBody = new FormBody.Builder()
+                .add("id",voice.getId().toString())
+                .add("name",voiceName.getText().toString().trim())
+                .build();
+        HttpUtil.sendOkHttpPostRequest("/voice/updateName", requestBody,new okhttp3.Callback() {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String sightsData = response.body().string();
+                final ResponseCode responseCode = GsonUtil.getResponseJson(sightsData);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(SpotManagerActivity.this, responseCode.getInfo(),Toast.LENGTH_SHORT).show();
+                        if (responseCode.getCode().equals("1")) {
+                            //todo
+                            AlertDialog.Builder dialog = new AlertDialog.Builder(SpotManagerActivity.this);
+                            dialog.setTitle("信息:");
+                            dialog.setMessage("当前音频命名更新成功！");
+                            dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                            dialog.show();
+                            //更新当前存储的信息
+                            getSightInfo();
+                            releaseBottomTools();
+                        }
+                    }
+                });
+            }
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Toast.makeText(SpotManagerActivity.this,"网络错误",Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void releaseBottomTools() {
@@ -294,6 +378,8 @@ public class SpotManagerActivity extends AppCompatActivity {
                             name.setEnabled(false);
                             introduce.setEnabled(false);
                             done.setVisibility(View.INVISIBLE);
+                            //更新当前存储的信息
+                            getSightInfo();
                         }
                     }
                 });
@@ -319,7 +405,7 @@ public class SpotManagerActivity extends AppCompatActivity {
                         introduce.setText(spot.getIntroduce());
                         if (spot.getVoices() != null) {
                             if (spot.getVoices().size() > 0) {
-                                Voice voice = spot.getVoices().get(0);
+                                voice = spot.getVoices().get(0);
                                 voiceName.setText(voice.getName());
                                 voiceOnlineUrl = HttpUtil.RESOURCE_URL + voice.getResourcesPath();
                                 nowPlayMusicPath = voiceOnlineUrl;//显示景点信息后 初始化音乐播发器中的URL为在线资源
@@ -472,7 +558,7 @@ public class SpotManagerActivity extends AppCompatActivity {
             RequestBody requestBody = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
                     .addFormDataPart("name",audioFileName)
-                    .addFormDataPart("id",spot.getVoices().get(0).getId().toString())
+                    .addFormDataPart("id",voice.getId().toString())
                     .addFormDataPart("file", audioFileName + ".mp3", RequestBody.create(MediaType.parse("audio/*"),file))
                     .build();
             HttpUtil.sendOkHttpPostRequest("/voice/update", requestBody, new okhttp3.Callback() {
@@ -495,8 +581,10 @@ public class SpotManagerActivity extends AppCompatActivity {
                                     }
                                 });
                                 dialog.show();
+                                releaseBottomTools();
+                                //更新当前存储的信息
+                                getSightInfo();
                             }
-                            releaseBottomTools();
                         }
                     });
                 }
