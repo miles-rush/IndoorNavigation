@@ -37,17 +37,44 @@
                         android:layout_marginTop="12dp"
                         android:src="@drawable/icon_user"/>
                 </RelativeLayout>
-                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                    android:id="@+id/sight_swipe"
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/sight_list"
+                    android:layout_height="wrap_content">
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#000000" />
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentLeft="true"
+                        android:background="#E3E3E3" />
+                    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                        android:id="@+id/sight_swipe"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/sight_list"
+                            android:scrollbarSize="5dp"
+                            android:scrollbars="vertical"
+                            android:scrollbarThumbVertical="@color/colorBlack"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
 
-                    </androidx.recyclerview.widget.RecyclerView>
-                </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                        </androidx.recyclerview.widget.RecyclerView>
+                    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentRight="true"
+                        android:background="#E3E3E3" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_alignParentBottom="true"
+                        android:background="#E3E3E3" />
+                </RelativeLayout>
             </LinearLayout>
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/add_sight"

@@ -274,7 +274,6 @@ public class SpotManagerActivity extends AppCompatActivity {
                     public void run() {
                         Toast.makeText(SpotManagerActivity.this, responseCode.getInfo(),Toast.LENGTH_SHORT).show();
                         if (responseCode.getCode().equals("1")) {
-                            //todo
                             AlertDialog.Builder dialog = new AlertDialog.Builder(SpotManagerActivity.this);
                             dialog.setTitle("信息:");
                             dialog.setMessage("当前音频命名更新成功！");

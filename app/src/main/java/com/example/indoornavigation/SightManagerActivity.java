@@ -38,6 +38,11 @@ public class SightManagerActivity extends AppCompatActivity {
     private EditText coordinate;
     private EditText introduce;
 
+    //定位的相关UI
+    private ImageView getLocation;
+    private SwipeRefreshLayout pointsSwipe;
+    private RecyclerView pointRecyclerView;
+
     private FloatingActionButton addSpot;
     private FloatingActionButton updateSight;
     private FloatingActionButton deleteSight;
@@ -61,6 +66,12 @@ public class SightManagerActivity extends AppCompatActivity {
         initButtons();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getSightInfo();
+    }
+
     private void init() {
         sightId = getIntent().getIntExtra("sightId", 0);
 
@@ -77,6 +88,10 @@ public class SightManagerActivity extends AppCompatActivity {
 
         spotRecyclerView = findViewById(R.id.sight_spot_list);
         spotSwipeRefreshLayout = findViewById(R.id.sight_spot_swipe);
+
+        getLocation = findViewById(R.id.manager_get_location);
+        pointsSwipe = findViewById(R.id.manager_points_swipe);
+        pointRecyclerView = findViewById(R.id.manager_points_list);
 
         spotSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override

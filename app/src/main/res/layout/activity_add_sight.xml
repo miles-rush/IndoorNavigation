@@ -80,6 +80,47 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/sight_coordinate"/>
 
+            <RelativeLayout
+                android:layout_width="280dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="10dp">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#E3E3E3" />
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentLeft="true"
+                    android:background="#E3E3E3" />
+                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                    android:id="@+id/add_points_swipe"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/add_points_list"
+                        android:scrollbarSize="5dp"
+                        android:scrollbars="vertical"
+                        android:scrollbarThumbVertical="@color/colorBlack"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    </androidx.recyclerview.widget.RecyclerView>
+                </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentRight="true"
+                    android:background="#E3E3E3" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_alignParentBottom="true"
+                    android:background="#E3E3E3" />
+            </RelativeLayout>
             <EditText
                 android:id="@+id/input_sight_coordinate"
                 android:layout_width="280dp"
@@ -87,9 +128,11 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="10dp"
+                android:visibility="gone"
                 android:hint="景区坐标"/>
 
             <ImageView
+                android:id="@+id/add_get_location"
                 android:layout_marginTop="10dp"
                 android:layout_marginRight="5dp"
                 android:layout_width="wrap_content"

@@ -45,6 +45,7 @@
                 android:textColor="#9F9FA0"
                 android:textColorHint="#9F9FA0"
                 android:hint="请输入你的账户..."/>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dip"
