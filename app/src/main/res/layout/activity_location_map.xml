@@ -18,15 +18,15 @@
         <View
             android:layout_margin="8dp"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:alpha="0.2"
+            android:layout_height="115dp"
+            android:alpha="0.8"
             android:background="#E3E3E3">
         </View>
         <LinearLayout
             android:id="@+id/show_window"
             android:layout_margin="8dp"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="115dp"
             android:orientation="vertical">
             <TextView
                 android:layout_margin="5dp"
@@ -38,6 +38,7 @@
             <TextView
                 android:id="@+id/location_text"
                 android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
                 android:textSize="15dp"
                 android:textStyle="bold"
                 android:layout_width="wrap_content"
@@ -48,7 +49,7 @@
                 android:id="@+id/location_name"
                 android:layout_marginLeft="5dp"
                 android:layout_marginTop="5dp"
-                android:layout_width="150dp"
+                android:layout_width="180dp"
                 android:layout_height="wrap_content"
                 android:hint="该坐标对应名称"/>
         </LinearLayout>

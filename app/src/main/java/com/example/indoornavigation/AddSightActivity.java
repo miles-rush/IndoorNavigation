@@ -162,9 +162,7 @@ public class AddSightActivity extends AppCompatActivity {
         });
     }
 
-    /*
-    坐标内容尚未添加
-     */
+
     private void saveSight() {
         String nameText = name.getText().toString().trim();
         String coordinateText = coordinate.getText().toString().trim();

@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.example.bean.Point;
 import com.example.bean.Sight;
 import com.example.indoornavigation.R;
+import com.example.indoornavigation.ShowMarksActivity;
 import com.example.indoornavigation.SightManagerActivity;
 
 import java.util.List;
@@ -47,6 +48,10 @@ public class PointAdapter extends RecyclerView.Adapter<PointAdapter.ViewHolder> 
                 int position = holder.getAdapterPosition();
                 Point point = pointList.get(position);
                 Toast.makeText(v.getContext(),"name:" + point.getName(),Toast.LENGTH_SHORT).show();
+                int pointId = point.getId();
+                Intent intent = new Intent(v.getContext(), ShowMarksActivity.class);
+                intent.putExtra("pointId", pointId);
+                v.getContext().startActivity(intent);
 //                int sightId = sight.getId();
 //                Intent intent = new Intent(v.getContext(), SightManagerActivity.class);
 //                intent.putExtra("sightId",sightId);

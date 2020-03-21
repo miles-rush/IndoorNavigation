@@ -8,6 +8,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import android.content.DialogInterface;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
@@ -21,9 +22,16 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
+import com.amap.api.maps.AMapOptions;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.MapView;
+import com.amap.api.maps.UiSettings;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.LatLng;
+import com.amap.api.maps.model.Marker;
+import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.MyLocationStyle;
+import com.example.bean.Point;
 import com.example.bean.ResponseCode;
 import com.example.bean.Sight;
 import com.example.tool.GsonUtil;
@@ -31,6 +39,8 @@ import com.example.tool.HttpUtil;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LocationMapActivity extends AppCompatActivity {
     private MapView mapView = null;
@@ -46,6 +56,8 @@ public class LocationMapActivity extends AppCompatActivity {
     private String longitude = ""; //经度
 
     private Integer sightId;
+    private Sight sight;
+    private List<Point> points = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +71,8 @@ public class LocationMapActivity extends AppCompatActivity {
         initMap();
         initUI();
         initLocation();
+        getSightInfo();
+
     }
 
     //地图相关的参数
@@ -66,14 +80,18 @@ public class LocationMapActivity extends AppCompatActivity {
         if (aMap == null) {
             aMap = mapView.getMap();
         }
+        UiSettings uiSettings = aMap.getUiSettings();
+        uiSettings.setZoomPosition(AMapOptions.ZOOM_POSITION_RIGHT_CENTER);
+
         myLocationStyle = new MyLocationStyle();
         myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);
         myLocationStyle.interval(2000);
 
         aMap.setMyLocationStyle(myLocationStyle);
         aMap.showIndoorMap(true);//显示室内地图
-        aMap.moveCamera(CameraUpdateFactory.zoomTo(18));//缩放程度设置
+        aMap.moveCamera(CameraUpdateFactory.zoomTo(20));//缩放程度设置
         aMap.setMyLocationEnabled(true);
+
     }
 
     //定位相关参数
@@ -175,8 +193,9 @@ public class LocationMapActivity extends AppCompatActivity {
         }
         RequestBody requestBody = new FormBody.Builder()
                 .add("name",name)
+                .add("latitude",latitude)
+                .add("longitude",longitude)
                 .add("id",sightId.toString())
-                .add("coordinate",latitude + "," + longitude)
                 .build();
         HttpUtil.sendOkHttpPostRequest("/point/add", requestBody, new okhttp3.Callback() {
             @Override
@@ -188,7 +207,8 @@ public class LocationMapActivity extends AppCompatActivity {
                     public void run() {
                         Toast.makeText(LocationMapActivity.this,responseCode.getInfo(),Toast.LENGTH_SHORT).show();
                         if (responseCode.getCode().equals("1")) {
-
+                            //更新标记信息
+                            getSightInfo();
                         }
                     }
                 });
@@ -201,6 +221,54 @@ public class LocationMapActivity extends AppCompatActivity {
                         Toast.makeText(LocationMapActivity.this,"网络错误",Toast.LENGTH_SHORT).show();
                     }
                 });
+            }
+        });
+    }
+
+    //更新地图上的点标记
+    private void updateMarks() {
+        if (points != null) {
+            aMap.clear(true);//重置
+            if (points.size() > 0) {
+                for (Point point:points) {
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    Double x = Double.parseDouble(point.getLatitude());
+                    Double y = Double.parseDouble(point.getLongitude());
+                    LatLng latLng = new LatLng(x,y);
+                    markerOptions.position(latLng);
+                    markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.map_point_s)));
+                    markerOptions.title(point.getName());
+                    markerOptions.setFlat(true);
+                    Marker marker = aMap.addMarker(markerOptions);
+                    marker.showInfoWindow();
+                }
+            }
+        }
+    }
+
+
+    private void getSightInfo() {
+        HttpUtil.sendOkHttpGetRequest("/sight/query?id=" + sightId, new okhttp3.Callback() {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String sightsData = response.body().string();
+                sight = GsonUtil.getSightJson(sightsData);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //更新当前保存的数据
+                        if (sight != null) {
+                            if (sight.getPoints() != null) {
+                                points = sight.getPoints();
+                            }
+                        }
+                        updateMarks();
+                    }
+                });
+            }
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Toast.makeText(LocationMapActivity.this,"网络错误",Toast.LENGTH_SHORT).show();
             }
         });
     }

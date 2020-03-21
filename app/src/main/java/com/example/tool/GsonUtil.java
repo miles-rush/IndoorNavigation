@@ -1,5 +1,6 @@
 package com.example.tool;
 
+import com.example.bean.Point;
 import com.example.bean.ResponseCode;
 import com.example.bean.Sight;
 import com.example.bean.Spot;
@@ -31,5 +32,11 @@ public class GsonUtil {
         Gson gson = new Gson();
         Spot spot = gson.fromJson(jsonData, new TypeToken<Spot>(){}.getType());
         return spot;
+    }
+
+    public static Point getPointJson(String jsonData) {
+        Gson gson = new Gson();
+        Point point = gson.fromJson(jsonData, new TypeToken<Point>(){}.getType());
+        return point;
     }
 }

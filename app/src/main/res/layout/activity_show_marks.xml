@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ShowMarksActivity">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <com.amap.api.maps.MapView
+            android:id="@+id/show_map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <View
+            android:layout_margin="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="115dp"
+            android:alpha="0.8"
+            android:background="#E3E3E3">
+        </View>
+        <LinearLayout
+            android:id="@+id/show_window"
+            android:layout_margin="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="115dp"
+            android:orientation="vertical">
+            <TextView
+                android:layout_margin="5dp"
+                android:layout_width="100dp"
+                android:textSize="13dp"
+                android:textStyle="bold"
+                android:layout_height="wrap_content"
+                android:text="当前坐标:"/>
+            <TextView
+                android:id="@+id/manager_location_text"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:textSize="15dp"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="[-----,-----]"/>
+
+            <EditText
+                android:id="@+id/manager_location_name"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:hint="该坐标对应名称"/>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/manager_location_back"
+            android:clickable="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/back"/>
+
+        <ImageView
+            android:id="@+id/manager_local_done"
+            android:layout_marginTop="90dp"
+            android:layout_marginRight="5dp"
+            android:layout_alignParentRight="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:visibility="invisible"
+            android:src="@drawable/done"/>
+
+
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/delete_point"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_margin="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/icon_delete"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/edit_point"
+            android:layout_alignParentBottom="true"
+            android:layout_toLeftOf="@+id/delete_point"
+            android:layout_margin="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/icon_edit"/>
+
+
+
+
+
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

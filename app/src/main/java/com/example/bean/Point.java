@@ -7,6 +7,9 @@ public class Point {
 
     private String name;//对应名称
 
+    private String latitude;//纬度
+    private String longitude; //经度
+
     public Point() {}
 
     public Integer getId() {
@@ -31,5 +34,21 @@ public class Point {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
+    }
+
+    public String getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
     }
 }

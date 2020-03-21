@@ -17,8 +17,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.adapter.PointAdapter;
 import com.example.adapter.SightAdapter;
 import com.example.adapter.SpotAdapter;
+import com.example.bean.Point;
 import com.example.bean.ResponseCode;
 import com.example.bean.Sight;
 import com.example.bean.Spot;
@@ -52,6 +54,10 @@ public class SightManagerActivity extends AppCompatActivity {
     private LinearLayoutManager manager;
     private SpotAdapter spotAdapter;
     private List<Spot> spotList = new ArrayList<>();
+
+    private List<Point> points = new ArrayList<>();
+    private LinearLayoutManager pointManager;
+    private PointAdapter pointAdapter;
 
     private Integer sightId;
     private Sight sight;
@@ -100,17 +106,41 @@ public class SightManagerActivity extends AppCompatActivity {
                 getSightInfo();
             }
         });
+
+        getLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SightManagerActivity.this,LocationMapActivity.class);
+                intent.putExtra("sightId", sightId);
+                startActivity(intent);
+            }
+        });
+
+        pointsSwipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getSightInfo();
+            }
+        });
     }
 
     //景区下景点信息列表显示
     private void initSpotList() {
         spotList = sight.getSpots();
-
         manager = new LinearLayoutManager(this);
         spotRecyclerView.setLayoutManager(manager);
         spotAdapter = new SpotAdapter(spotList);
         spotRecyclerView.setAdapter(spotAdapter);
         spotRecyclerView.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
+    }
+
+    private void initPointList() {
+        points = sight.getPoints();
+        manager = new LinearLayoutManager(this);
+        pointRecyclerView.setLayoutManager(manager);
+        pointAdapter = new PointAdapter(points);
+        pointRecyclerView.setAdapter(pointAdapter);
+        pointRecyclerView.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
     }
 
     private void getSightInfo() {
@@ -127,8 +157,12 @@ public class SightManagerActivity extends AppCompatActivity {
                         introduce.setText(sight.getIntroduce());
                         //景区下景点列表显示
                         initSpotList();
+                        //景区下坐标列表显示
+                        points = sight.getPoints();
+                        initPointList();
                         //加载数据后使得不可编辑 刷新状态清除
                         spotSwipeRefreshLayout.setRefreshing(false);
+                        pointsSwipe.setRefreshing(false);
                         name.setEnabled(false);
                         introduce.setEnabled(false);
                     }
