@@ -181,11 +181,10 @@ public class AddSightActivity extends AppCompatActivity {
                     public void run() {
                         Toast.makeText(AddSightActivity.this,responseCode.getInfo(),Toast.LENGTH_SHORT).show();
                         if (responseCode.getCode().equals("1")) {
-                            //添加成功 隐藏提交按钮 允许添加位置
+                            //添加成功 隐藏提交按钮 允许添加入口坐标位置
                             done.setVisibility(View.INVISIBLE);
                             name.setEnabled(false);
                             introduce.setEnabled(false);
-                            //todo
                             sightId = responseCode.getAdditionalId();
                         }
                     }

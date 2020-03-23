@@ -185,7 +185,7 @@ public class ShowMarksActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    //更新成功后 编辑框锁定 提交按钮隐藏 todo
+    //更新成功后 编辑框锁定 提交按钮隐藏
     private void update() {
         final RequestBody requestBody = new FormBody.Builder()
                 .add("id",pointId.toString())

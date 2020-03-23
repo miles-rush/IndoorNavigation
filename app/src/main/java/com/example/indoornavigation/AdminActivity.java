@@ -54,7 +54,7 @@ public class AdminActivity extends AppCompatActivity {
         addSight = findViewById(R.id.add_sight);
         recyclerView = findViewById(R.id.sight_list);
         swipeRefreshLayout = findViewById(R.id.sight_swipe);
-        userManager = findViewById(R.id.user_manager_in);
+        userManager = findViewById(R.id.admin_manager_in);
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override

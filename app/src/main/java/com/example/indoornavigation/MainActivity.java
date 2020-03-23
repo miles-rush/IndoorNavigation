@@ -184,8 +184,10 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, responseCode.getInfo(),Toast.LENGTH_SHORT).show();
                         if (responseCode.getCode().equals("1")) {//普通用户
                             check(accountText, passwordText);
-                            //跳转
-
+                            Intent intent = new Intent(MainActivity.this, UserActivity.class);
+                            intent.putExtra("userId", responseCode.getAdditionalId()); //登录后传递该账户的ID
+                            startActivity(intent);
+                            finish();
                         }else if (responseCode.getCode().equals("2")) {//管理员
                             check(accountText, passwordText);
                             Intent intent = new Intent(MainActivity.this, AdminActivity.class);

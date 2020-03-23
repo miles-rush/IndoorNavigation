@@ -10,7 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ShowMarksActivity"></activity>
+        <activity android:name=".ShowSightActivity"></activity>
+        <activity android:name=".UserActivity" />
+        <activity android:name=".ShowMarksActivity" />
         <activity android:name=".LocationMapActivity" />
         <activity android:name=".SpotManagerActivity" />
         <activity android:name=".AddSpotActivity" />
