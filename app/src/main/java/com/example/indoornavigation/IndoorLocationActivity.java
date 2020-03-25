@@ -2,7 +2,18 @@ package com.example.indoornavigation;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
+import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
@@ -14,24 +25,116 @@ import com.amap.api.maps.AMapOptions;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.UiSettings;
+import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.MyLocationStyle;
+import com.amap.api.maps.model.PolylineOptions;
+import com.example.bean.Location;
+import com.example.handler.DeviceAttitudeHandler;
+import com.example.handler.StepDetectionHandler;
+import com.example.handler.StepPositioningHandler;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class IndoorLocationActivity extends AppCompatActivity {
     private MapView mapView = null;
     private AMap aMap = null;
     private MyLocationStyle myLocationStyle = null;
 
+    private ImageView startLocation;
+    private TextView info;
+
+    private LatLng latLng;
+    List<LatLng> latLngs = new ArrayList<LatLng>();
+
+    //传感器
+    private SensorManager sensorManager;
+    private StepDetectionHandler stepDetectionHandler;
+    private StepPositioningHandler stepPositioningHandler;
+    private DeviceAttitudeHandler deviceAttitudeHandler;
+
+    boolean isWalking = false;
+    Location sLocation = new Location();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_indoor_location);
 
-        mapView = (MapView) findViewById(R.id.location_map);
+        mapView = (MapView) findViewById(R.id.indoor_location_map);
         mapView.onCreate(savedInstanceState);
 
         initMap();
         initLocation();
+        initUI();
+        //initSensor();
+//        sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+//        List<Sensor> sensorsList = sensorManager.getSensorList(Sensor.TYPE_ALL);
+//        String infoText = "";
+//        for (Sensor sensor : sensorsList) {
+//            if (sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+//                infoText += "1ok";
+//            }
+//            if (sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+//                infoText += "2ok";
+//            }
+//        }
+//        info.setText(infoText);
+    }
+
+    //传感器相关内容初始化
+    private void initSensor() {
+        //获取传感器管理器对象
+        sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+        stepDetectionHandler = new StepDetectionHandler(sensorManager);
+        stepDetectionHandler.setStepListener(mStepDetectionListener);
+        deviceAttitudeHandler = new DeviceAttitudeHandler(sensorManager);
+        stepPositioningHandler = new StepPositioningHandler();
+        sLocation.setLongitude(latLng.longitude);
+        sLocation.setLatitude(latLng.latitude);
+        stepPositioningHandler.setmCurrentLocation(sLocation);
+    }
+
+    private StepDetectionHandler.StepDetectionListener mStepDetectionListener = new StepDetectionHandler.StepDetectionListener(){
+        public void newStep(float stepSize) {
+            Location newLocation = stepPositioningHandler.computeNextStep(stepSize, deviceAttitudeHandler.orientationVals[0]);
+            Log.d("LATLNG", sLocation.getLatitude() + " " + sLocation.getLongitude()+ " " + deviceAttitudeHandler.orientationVals[0]);
+            if (isWalking) {
+                //绘制新的点
+                // gm.newPoint(new LatLng(newloc.getLatitude(), newloc.getLongitude()),dah.orientationVals[0]);
+                final LatLng lng = new LatLng(newLocation.getLatitude(),newLocation.getLongitude());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        info.setText("Js:"+lng.latitude+","+lng.longitude+"/n");
+                    }
+                });
+                latLngs.add(lng);
+                aMap.addPolyline(new PolylineOptions().addAll(latLngs).width(10).color(Color.argb(255,1,1,1)));
+            }
+        }
+    };
+    //UI初始化
+    private void initUI() {
+        startLocation = findViewById(R.id.indoor_start_location);
+        info = findViewById(R.id.info);
+
+
+        startLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //停止GPS定位
+                //mapLocationClient.stopLocation();
+                aMap.setMyLocationEnabled(false);
+                Toast.makeText(IndoorLocationActivity.this,"关闭GPS，开始室内定位",Toast.LENGTH_SHORT).show();
+                initSensor();
+
+                latLngs.add(latLng);
+                deviceAttitudeHandler.start();
+                stepDetectionHandler.start();
+                isWalking = true;
+            }
+        });
     }
 
     //地图相关的参数
@@ -52,6 +155,7 @@ public class IndoorLocationActivity extends AppCompatActivity {
         aMap.setMyLocationEnabled(true);
     }
 
+    int jude = 1;
     //定位相关参数
     private AMapLocationClient mapLocationClient = null;
     public AMapLocationListener mapLocationListener = new AMapLocationListener() {
@@ -60,13 +164,7 @@ public class IndoorLocationActivity extends AppCompatActivity {
             if (aMapLocation != null) {
                 if (aMapLocation.getErrorCode() == 0) {
                     //定位成功
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            //更新当前位置经纬度
-
-                        }
-                    });
+                    latLng = new LatLng(aMapLocation.getLatitude(),aMapLocation.getLongitude());
                 }else {
                     Toast.makeText(IndoorLocationActivity.this,"GPS定位失败",Toast.LENGTH_SHORT).show();
                 }
@@ -86,7 +184,6 @@ public class IndoorLocationActivity extends AppCompatActivity {
         mapLocationClient.startLocation();
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -94,6 +191,9 @@ public class IndoorLocationActivity extends AppCompatActivity {
         mapView.onDestroy();
         mapLocationClient.stopLocation();
         mapLocationClient.onDestroy();
+
+        deviceAttitudeHandler.stop();
+        stepDetectionHandler.stop();
     }
     @Override
     protected void onResume() {
@@ -106,6 +206,7 @@ public class IndoorLocationActivity extends AppCompatActivity {
         super.onPause();
         //在activity执行onPause时执行mMapView.onPause ()，暂停地图的绘制
         mapView.onPause();
+
     }
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -113,4 +214,7 @@ public class IndoorLocationActivity extends AppCompatActivity {
         //在activity执行onSaveInstanceState时执行mMapView.onSaveInstanceState (outState)，保存地图当前的状态
         mapView.onSaveInstanceState(outState);
     }
+
+
 }
+

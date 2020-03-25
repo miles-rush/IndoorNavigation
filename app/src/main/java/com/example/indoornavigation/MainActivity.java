@@ -59,9 +59,12 @@ public class MainActivity extends AppCompatActivity {
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String accountText = account.getText().toString().trim();
-                String passwordText = password.getText().toString().trim();
-                login(accountText,passwordText);
+//                String accountText = account.getText().toString().trim();
+//                String passwordText = password.getText().toString().trim();
+//                login(accountText,passwordText);
+
+                Intent intent = new Intent(MainActivity.this,IndoorLocationActivity.class);
+                startActivity(intent);
             }
         });
 
