@@ -43,6 +43,7 @@ public class AddSpotActivity extends AppCompatActivity {
     private ImageView done;
     private ImageView openFile;
     private ImageView recordVoice;
+    private ImageView location;
 
     private EditText name;
     private EditText coordinate;
@@ -109,9 +110,33 @@ public class AddSpotActivity extends AppCompatActivity {
         voiceUnDone = findViewById(R.id.voice_undone);
         voiceDone = findViewById(R.id.voice_done);
         mediaText = findViewById(R.id.media_text);
+        location = findViewById(R.id.add_spot_location);
 
 
         sightId = getIntent().getIntExtra("sightId",0);
+        //跳转到定位界面
+        location.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!spotIdJudge()) {
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(AddSpotActivity.this);
+                    dialog.setTitle("信息:");
+                    dialog.setMessage("请先保存当前景点信息！");
+                    dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    dialog.show();
+                }else {
+                    //跳转
+                    Intent intent = new Intent(AddSpotActivity.this,IndoorLocationActivity.class);
+                    intent.putExtra("spotId",spotId);
+                    startActivity(intent);
+                }
+            }
+        });
 
         //关闭当前页面
         back.setOnClickListener(new View.OnClickListener() {

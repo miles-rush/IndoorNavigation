@@ -74,7 +74,7 @@ public class ShowSightActivity extends AppCompatActivity {
         int color = getResources().getColor(R.color.colorBlack);
         collapsingToolbarLayout.setCollapsedTitleTextColor(color);
         collapsingToolbarLayout.setTitle(sight.getName());
-        //扩展introduce字段
+        //扩展introduce字段  todo 这里要删掉
         String text = "";
         for (int i=0;i<=10;i++) {
             text += sight.getIntroduce();

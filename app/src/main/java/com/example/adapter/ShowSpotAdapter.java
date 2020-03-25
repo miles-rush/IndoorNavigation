@@ -80,6 +80,10 @@ public class ShowSpotAdapter extends RecyclerView.Adapter<ShowSpotAdapter.ViewHo
         viewHolder.voiceStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mediaPlayer.isPlaying()) {
+                    Toast.makeText(v.getContext(),"当前有音频正在播放",Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 if (spot.getVoices() != null) {
                     if (spot.getVoices().size() > 0){
                         if (spot.getVoices().get(0) != null) {

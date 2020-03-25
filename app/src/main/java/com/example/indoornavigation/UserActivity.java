@@ -73,7 +73,8 @@ public class UserActivity extends AppCompatActivity {
                 String text = searchText.getText().toString().trim();
                 List<Sight> temp = new ArrayList<>();
                 for (Sight s:sightList) {
-                    if (s.getName().contains(text)) {
+                    //忽视大小写
+                    if (s.getName().toLowerCase().contains(text.toLowerCase())) {
                         temp.add(s);
                     }
                 }

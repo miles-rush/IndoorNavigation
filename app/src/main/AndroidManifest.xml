@@ -10,7 +10,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ShowSightActivity"></activity>
+        <activity android:name=".IndoorLocationActivity"></activity>
+        <activity android:name=".ShowSightActivity" />
         <activity android:name=".UserActivity" />
         <activity android:name=".ShowMarksActivity" />
         <activity android:name=".LocationMapActivity" />

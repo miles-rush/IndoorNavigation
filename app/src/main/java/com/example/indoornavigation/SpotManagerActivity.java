@@ -45,6 +45,8 @@ public class SpotManagerActivity extends AppCompatActivity {
     private ImageView back;
     private ImageView done;
 
+    private ImageView location;
+
     private ImageView voiceEdit;
     private ImageView openFile;
 
@@ -119,6 +121,8 @@ public class SpotManagerActivity extends AppCompatActivity {
         voiceDone = findViewById(R.id.manager_voice_done);
         mediaText = findViewById(R.id.manager_media_text);
         showFilePath = findViewById(R.id.manager_local_voice_path);
+
+        location = findViewById(R.id.manager_spot_location);
 
         //打开文件
         openFile.setOnClickListener(new View.OnClickListener() {

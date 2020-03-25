@@ -19,6 +19,8 @@
                     android:id="@+id/search_text"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
+                    android:inputType="text"
+                    android:maxLines="1"
                     android:layout_marginLeft="2dp"
                     android:textSize="20dp"
                     android:textStyle="bold"

@@ -96,6 +96,7 @@
                     android:hint="景点坐标"/>
 
                 <ImageView
+                    android:id="@+id/manager_spot_location"
                     android:layout_marginTop="10dp"
                     android:layout_marginRight="5dp"
                     android:layout_width="wrap_content"
