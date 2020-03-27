@@ -59,12 +59,12 @@ public class MainActivity extends AppCompatActivity {
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                String accountText = account.getText().toString().trim();
-//                String passwordText = password.getText().toString().trim();
-//                login(accountText,passwordText);
+                String accountText = account.getText().toString().trim();
+                String passwordText = password.getText().toString().trim();
+                login(accountText,passwordText);
 
-                Intent intent = new Intent(MainActivity.this,IndoorLocationActivity.class);
-                startActivity(intent);
+//                Intent intent = new Intent(MainActivity.this,IndoorLocationActivity.class);
+//                startActivity(intent);
             }
         });
 
@@ -193,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
                             finish();
                         }else if (responseCode.getCode().equals("2")) {//管理员
                             check(accountText, passwordText);
+                            HttpUtil.setAdminToken(responseCode.getAdditionalToken());
                             Intent intent = new Intent(MainActivity.this, AdminActivity.class);
                             intent.putExtra("userId", responseCode.getAdditionalId()); //登录后传递该账户的ID
                             startActivity(intent);

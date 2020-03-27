@@ -6,6 +6,7 @@ public class ResponseCode {
     private String info;
 
     private Integer additionalId;
+    private String additionalToken;
 
     public String getCode() {
         return code;
@@ -29,5 +30,13 @@ public class ResponseCode {
 
     public void setAdditionalId(Integer additionalId) {
         this.additionalId = additionalId;
+    }
+
+    public String getAdditionalToken() {
+        return additionalToken;
+    }
+
+    public void setAdditionalToken(String additionalToken) {
+        this.additionalToken = additionalToken;
     }
 }

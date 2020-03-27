@@ -251,7 +251,10 @@ public class SightManagerActivity extends AppCompatActivity {
     }
     //调用删除接口
     private void deleteSight() {
-        HttpUtil.sendOkHttpGetRequest("/sight/delete?id=" + sightId, new okhttp3.Callback() {
+        final RequestBody requestBody = new FormBody.Builder()
+                .add("id",sightId.toString())
+                .build();
+        HttpUtil.sendOkHttpPostRequest("/sight/delete", requestBody, new okhttp3.Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String sightsData = response.body().string();

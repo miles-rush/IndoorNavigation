@@ -143,7 +143,10 @@ public class ShowMarksActivity extends AppCompatActivity {
     }
 
     private void delete() {
-        HttpUtil.sendOkHttpGetRequest("/point/delete?id=" + pointId, new okhttp3.Callback() {
+        final RequestBody requestBody = new FormBody.Builder()
+                .add("id",pointId.toString())
+                .build();
+        HttpUtil.sendOkHttpPostRequest("/point/delete", requestBody, new okhttp3.Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String sightsData = response.body().string();

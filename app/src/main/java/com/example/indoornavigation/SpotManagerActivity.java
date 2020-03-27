@@ -425,7 +425,10 @@ public class SpotManagerActivity extends AppCompatActivity {
     }
 
     private void deleteSpot() {
-        HttpUtil.sendOkHttpGetRequest("/spot/delete?id=" + spotId, new okhttp3.Callback() {
+        final RequestBody requestBody = new FormBody.Builder()
+                .add("id",spotId.toString())
+                .build();
+        HttpUtil.sendOkHttpPostRequest("/spot/delete", requestBody, new okhttp3.Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String sightsData = response.body().string();
