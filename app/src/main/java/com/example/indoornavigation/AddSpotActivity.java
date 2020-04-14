@@ -133,6 +133,7 @@ public class AddSpotActivity extends AppCompatActivity {
                     //跳转
                     Intent intent = new Intent(AddSpotActivity.this,IndoorLocationActivity.class);
                     intent.putExtra("spotId",spotId);
+                    intent.putExtra("sightId",sightId);
                     startActivity(intent);
                 }
             }
@@ -368,7 +369,7 @@ public class AddSpotActivity extends AppCompatActivity {
                             //添加成功返回
                             AlertDialog.Builder dialog = new AlertDialog.Builder(AddSpotActivity.this);
                             dialog.setTitle("信息:");
-                            dialog.setMessage("景点信息已保存，可以添加介绍语音！");
+                            dialog.setMessage("景点信息已保存，可以添加其他信息！");
                             dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {

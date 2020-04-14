@@ -40,6 +40,9 @@ public class SightManagerActivity extends AppCompatActivity {
     private EditText coordinate;
     private EditText introduce;
 
+    private EditText address;
+    private EditText contact;
+
     //定位的相关UI
     private ImageView getLocation;
     private SwipeRefreshLayout pointsSwipe;
@@ -87,6 +90,9 @@ public class SightManagerActivity extends AppCompatActivity {
         name = findViewById(R.id.manager_sight_name);
         coordinate = findViewById(R.id.input_sight_coordinate);
         introduce = findViewById(R.id.manager_sight_introduce);
+
+        address = findViewById(R.id.manager_sight_address);
+        contact = findViewById(R.id.manager_sight_contact);
 
         addSpot = findViewById(R.id.add_spot);
         updateSight = findViewById(R.id.update_sight);
@@ -155,6 +161,8 @@ public class SightManagerActivity extends AppCompatActivity {
                         //基础信息的显示
                         name.setText(sight.getName());
                         introduce.setText(sight.getIntroduce());
+                        address.setText(sight.getAddress());
+                        contact.setText(sight.getContact());
                         //景区下景点列表显示
                         initSpotList();
                         //景区下坐标列表显示
@@ -165,6 +173,8 @@ public class SightManagerActivity extends AppCompatActivity {
                         pointsSwipe.setRefreshing(false);
                         name.setEnabled(false);
                         introduce.setEnabled(false);
+                        address.setEnabled(false);
+                        contact.setEnabled(false);
                     }
                 });
             }
@@ -192,6 +202,8 @@ public class SightManagerActivity extends AppCompatActivity {
                 //文本框可编辑 提交按钮可见
                 name.setEnabled(true);
                 introduce.setEnabled(true);
+                address.setEnabled(true);
+                contact.setEnabled(true);
                 done.setVisibility(View.VISIBLE);
             }
         });
@@ -224,12 +236,14 @@ public class SightManagerActivity extends AppCompatActivity {
                 .add("id",sightId.toString())
                 .add("name",name.getText().toString().trim())
                 .add("introduce",introduce.getText().toString().trim())
+                .add("address",address.getText().toString().trim())
+                .add("contact",contact.getText().toString().trim())
                 .build();
         HttpUtil.sendOkHttpPostRequest("/sight/update", requestBody,new okhttp3.Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                String sightsData = response.body().string();
-                final ResponseCode responseCode = GsonUtil.getResponseJson(sightsData);
+                String data = response.body().string();
+                final ResponseCode responseCode = GsonUtil.getResponseJson(data);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -238,6 +252,8 @@ public class SightManagerActivity extends AppCompatActivity {
                             //更新成功 隐藏按钮 设置不可编辑
                             name.setEnabled(false);
                             introduce.setEnabled(false);
+                            address.setEnabled(false);
+                            contact.setEnabled(false);
                             done.setVisibility(View.INVISIBLE);
                         }
                     }

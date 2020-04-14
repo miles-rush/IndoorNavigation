@@ -8,6 +8,9 @@ public class Sight {
     private String introduce;
     private String coordinate;
 
+    private String address;
+    private String contact;
+
     private List<Spot> spots;
     private List<Point> points;
 
@@ -59,5 +62,21 @@ public class Sight {
 
     public void setPoints(List<Point> points) {
         this.points = points;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
+    public void setContact(String contact) {
+        this.contact = contact;
     }
 }

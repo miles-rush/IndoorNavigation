@@ -80,7 +80,7 @@ public class SpotManagerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_spot_manager);
         init();
-        getSightInfo();
+        getSpotInfo();
 
         //音乐播放服务
         Intent intent = new Intent(SpotManagerActivity.this, MusicService.class);
@@ -289,7 +289,7 @@ public class SpotManagerActivity extends AppCompatActivity {
                             });
                             dialog.show();
                             //更新当前存储的信息
-                            getSightInfo();
+                            getSpotInfo();
                             releaseBottomTools();
                         }
                     }
@@ -382,7 +382,7 @@ public class SpotManagerActivity extends AppCompatActivity {
                             introduce.setEnabled(false);
                             done.setVisibility(View.INVISIBLE);
                             //更新当前存储的信息
-                            getSightInfo();
+                            getSpotInfo();
                         }
                     }
                 });
@@ -394,7 +394,7 @@ public class SpotManagerActivity extends AppCompatActivity {
         });
     }
     //加载景区信息
-    private void getSightInfo() {
+    private void getSpotInfo() {
         HttpUtil.sendOkHttpGetRequest("/spot/query?id=" + spotId, new okhttp3.Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
@@ -524,7 +524,7 @@ public class SpotManagerActivity extends AppCompatActivity {
                             }
                             releaseBottomTools();
                             //刷新当前景点信息
-                            getSightInfo();
+                            getSpotInfo();
                         }
                     });
                 }
@@ -589,7 +589,7 @@ public class SpotManagerActivity extends AppCompatActivity {
                                 dialog.show();
                                 releaseBottomTools();
                                 //更新当前存储的信息
-                                getSightInfo();
+                                getSpotInfo();
                             }
                         }
                     });

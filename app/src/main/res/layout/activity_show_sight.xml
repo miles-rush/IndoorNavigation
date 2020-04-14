@@ -68,6 +68,37 @@
 
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    app:cardCornerRadius="4dp">
+                    <TextView
+                        android:id="@+id/show_sight_contact"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="联系电话:"/>
+
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    app:cardCornerRadius="4dp">
+                    <TextView
+                        android:id="@+id/show_sight_address"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="景区地址:"/>
+
+                </androidx.cardview.widget.CardView>
+
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

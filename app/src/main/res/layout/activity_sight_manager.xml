@@ -47,7 +47,8 @@
                     android:src="@drawable/done"/>
             </RelativeLayout>
             <ImageView
-                android:layout_marginTop="30dp"
+                android:visibility="gone"
+                android:layout_marginTop="3dp"
                 android:layout_gravity="center"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -156,6 +157,50 @@
                     android:layout_marginLeft="5dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:src="@drawable/phone"/>
+
+                <EditText
+                    android:id="@+id/manager_sight_contact"
+                    android:textColor="@color/colorBlack"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="10dp"
+                    android:hint="联系电话"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/address"/>
+
+                <EditText
+                    android:id="@+id/manager_sight_address"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorBlack"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="10dp"
+                    android:hint="景区地址"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:src="@drawable/sight_introduce"/>
 
                 <EditText
@@ -167,9 +212,12 @@
                     android:layout_marginRight="10dp"
                     android:textColor="@color/colorBlack"
                     android:gravity="top"
-                    android:minLines="5"
+                    android:minLines="4"
                     android:hint="景区整体介绍"/>
             </LinearLayout>
+
+
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

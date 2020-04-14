@@ -8,6 +8,7 @@ public class Spot {
     private String introduce;
     private String coordinate;
     private List<Voice> voices;
+    private SpotPoint point;
 
     public Spot() {}
 
@@ -49,5 +50,13 @@ public class Spot {
 
     public void setCoordinate(String coordinate) {
         this.coordinate = coordinate;
+    }
+
+    public SpotPoint getPoint() {
+        return point;
+    }
+
+    public void setPoint(SpotPoint point) {
+        this.point = point;
     }
 }

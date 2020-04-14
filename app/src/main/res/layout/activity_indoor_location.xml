@@ -21,19 +21,68 @@
             android:alpha="0.8"
             android:background="#E3E3E3">
         </View>
-        <TextView
-            android:id="@+id/info"
+        <LinearLayout
+            android:layout_margin="8dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_margin="3dp"
+                android:id="@+id/info_spot_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:text="景点:"/>
+            <TextView
+                android:layout_margin="3dp"
+                android:id="@+id/info_spot_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:text="坐标:"/>
+            <TextView
+                android:id="@+id/info_tips"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:layout_marginTop="5dp"
+                android:textSize="18dp"
+                android:textColor="@color/colorBlack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="信息:请在景区的某个起点附近开始定位"/>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/indoor_location_back"
+            android:clickable="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/back"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/indoor_start_location"
-            android:layout_margin="5dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="30dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:src="@drawable/icon_start_location"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:visibility="invisible"
+            android:id="@+id/indoor_upload_location"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="30dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/add"/>
     </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

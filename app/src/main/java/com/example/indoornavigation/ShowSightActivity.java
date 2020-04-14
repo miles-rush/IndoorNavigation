@@ -36,6 +36,9 @@ public class ShowSightActivity extends AppCompatActivity {
     private CollapsingToolbarLayout collapsingToolbarLayout;
     private ImageView sightImageView;
     private TextView sightContentText;
+    private TextView sightAddress;
+    private TextView sightContact;
+
     private ActionBar actionBar;
 
 
@@ -59,6 +62,9 @@ public class ShowSightActivity extends AppCompatActivity {
         collapsingToolbarLayout = findViewById(R.id.collapsing_toolbar);
         sightImageView = findViewById(R.id.sight_image_view);
         sightContentText = findViewById(R.id.sight_content_text);
+        sightAddress = findViewById(R.id.show_sight_address);
+        sightContact = findViewById(R.id.show_sight_contact);
+
         recyclerView = findViewById(R.id.show_sight_spot_list);
         setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
@@ -80,6 +86,8 @@ public class ShowSightActivity extends AppCompatActivity {
             text += sight.getIntroduce();
         }
         sightContentText.setText(text);
+        sightAddress.setText("景区地址:" + sight.getAddress());
+        sightContact.setText("联系电话:" + sight.getContact());
         //初始化景点列表
         initList();
     }

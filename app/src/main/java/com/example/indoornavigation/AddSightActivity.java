@@ -39,6 +39,9 @@ public class AddSightActivity extends AppCompatActivity {
     private EditText coordinate;
     private EditText introduce;
 
+    private EditText address;
+    private EditText contact;
+
     //定位的相关UI
     private ImageView getLocation;
     private SwipeRefreshLayout pointsSwipe;
@@ -65,6 +68,9 @@ public class AddSightActivity extends AppCompatActivity {
         name = findViewById(R.id.input_sight_name);
         coordinate = findViewById(R.id.input_sight_coordinate);
         introduce = findViewById(R.id.input_sight_introduce);
+
+        address = findViewById(R.id.input_sight_address);
+        contact = findViewById(R.id.input_sight_contact);
 
         getLocation = findViewById(R.id.add_get_location);
         pointsSwipe = findViewById(R.id.add_points_swipe);
@@ -167,9 +173,14 @@ public class AddSightActivity extends AppCompatActivity {
         String nameText = name.getText().toString().trim();
         String coordinateText = coordinate.getText().toString().trim();
         String introduceText = introduce.getText().toString().trim();
+        String addressText = address.getText().toString().trim();
+        String contactText = contact.getText().toString().trim();
+
         RequestBody requestBody = new FormBody.Builder()
                 .add("name",nameText)
                 .add("introduce",introduceText)
+                .add("address",addressText)
+                .add("contact",contactText)
                 .build();
         HttpUtil.sendOkHttpPostRequest("/sight/add", requestBody, new okhttp3.Callback() {
             @Override
@@ -185,6 +196,8 @@ public class AddSightActivity extends AppCompatActivity {
                             done.setVisibility(View.INVISIBLE);
                             name.setEnabled(false);
                             introduce.setEnabled(false);
+                            address.setEnabled(false);
+                            contact.setEnabled(false);
                             sightId = responseCode.getAdditionalId();
                         }
                     }
