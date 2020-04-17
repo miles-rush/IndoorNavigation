@@ -66,6 +66,7 @@ public class SpotManagerActivity extends AppCompatActivity {
     private TextView showFilePath;
 
     private Integer spotId;
+    private Integer sightId;
     private Spot spot;
     private Voice voice;
 
@@ -87,6 +88,12 @@ public class SpotManagerActivity extends AppCompatActivity {
         bindService(intent, connection, BIND_AUTO_CREATE);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getSpotInfo();
+    }
+
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -101,6 +108,8 @@ public class SpotManagerActivity extends AppCompatActivity {
 
     private void init() {
         spotId = getIntent().getIntExtra("spotId",0);
+        sightId = getIntent().getIntExtra("sightId",0);  //todo 没有传进来
+
         back = findViewById(R.id.manager_spot_back);
         done = findViewById(R.id.manager_spot_done);
 
@@ -123,6 +132,17 @@ public class SpotManagerActivity extends AppCompatActivity {
         showFilePath = findViewById(R.id.manager_local_voice_path);
 
         location = findViewById(R.id.manager_spot_location);
+
+        location.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SpotManagerActivity.this,IndoorLocationActivity.class);
+                intent.putExtra("spotId",spotId);
+                intent.putExtra("sightId",sightId);
+                startActivity(intent);
+            }
+        });
+
 
         //打开文件
         openFile.setOnClickListener(new View.OnClickListener() {
@@ -406,12 +426,29 @@ public class SpotManagerActivity extends AppCompatActivity {
                         //基础信息的显示
                         name.setText(spot.getName());
                         introduce.setText(spot.getIntroduce());
+                        coordinate.setText("");
                         if (spot.getVoices() != null) {
                             if (spot.getVoices().size() > 0) {
                                 voice = spot.getVoices().get(0);
                                 voiceName.setText(voice.getName());
                                 voiceOnlineUrl = HttpUtil.RESOURCE_URL + voice.getResourcesPath();
                                 nowPlayMusicPath = voiceOnlineUrl;//显示景点信息后 初始化音乐播发器中的URL为在线资源
+                            }
+                        }
+
+                        if (spot.getPoint() != null) {
+                            if (spot.getPoint().getId() != null) {
+                                String lat = spot.getPoint().getLatitude();
+                                String lon = spot.getPoint().getLongitude();
+                                int length = 7;
+                                if (lat.length() < length) {
+                                    length = lat.length();
+                                }
+                                if (lon.length() < length) {
+                                    length = lon.length();
+                                }
+                                String loc = lat.substring(0,length) + "," + lon.substring(0,length);
+                                coordinate.setText(loc);
                             }
                         }
                     }

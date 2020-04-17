@@ -31,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.bean.ResponseCode;
+import com.example.bean.Spot;
 import com.example.tool.GsonUtil;
 import com.example.tool.HttpUtil;
 import com.example.tool.MusicService;
@@ -61,6 +62,8 @@ public class AddSpotActivity extends AppCompatActivity {
     private Integer sightId;
     private Integer spotId = -1;
 
+    private Spot spot = null;
+
     private MusicService.PlayMusicBinder playMusicBinder;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +74,62 @@ public class AddSpotActivity extends AppCompatActivity {
         //音乐播放服务
         Intent intent = new Intent(AddSpotActivity.this, MusicService.class);
         bindService(intent, connection, BIND_AUTO_CREATE);
+    }
+
+    //刷新spot的信息
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (spotId != -1) {
+            getSpotInfo();
+        }
+    }
+
+    private void getSpotInfo() {
+        HttpUtil.sendOkHttpGetRequest("/spot/query?id=" + spotId, new okhttp3.Callback() {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String spotData = response.body().string();
+                spot = GsonUtil.getSpotJson(spotData);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        name.setText(spot.getName());
+                        introduce.setText(spot.getIntroduce());
+                        if (spot.getPoint() != null) {
+                            if (spot.getPoint().getId() != null) {
+                                String lat = spot.getPoint().getLatitude();
+                                String lon = spot.getPoint().getLongitude();
+                                if (lat.length() > 0 && lon.length() > 0) {
+                                    int length = 7;
+                                    if (lat.length() < length) {
+                                        length = lat.length();
+                                    }
+                                    if (lon.length() < length) {
+                                        length = lon.length();
+                                    }
+                                    String loc = lat.substring(0,length) + "," + lon.substring(0,length);
+                                    coordinate.setText(loc);
+                                    location.setClickable(false);
+                                }
+
+                            }
+                        }
+
+//                        if (spot.getVoices() != null) {
+//                            if (spot.getVoices().size() > 0) {
+//                                voicePath.setText(spot.getVoices().get(0).getName());
+//                                voicePath.setEnabled(false);
+//                            }
+//                        }
+                    }
+                });
+            }
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Toast.makeText(AddSpotActivity.this,"网络错误",Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     //设置音乐路径
@@ -112,7 +171,6 @@ public class AddSpotActivity extends AppCompatActivity {
         mediaText = findViewById(R.id.media_text);
         location = findViewById(R.id.add_spot_location);
 
-
         sightId = getIntent().getIntExtra("sightId",0);
         //跳转到定位界面
         location.setOnClickListener(new View.OnClickListener() {
@@ -132,6 +190,7 @@ public class AddSpotActivity extends AppCompatActivity {
                 }else {
                     //跳转
                     Intent intent = new Intent(AddSpotActivity.this,IndoorLocationActivity.class);
+                    //Intent intent = new Intent(AddSpotActivity.this,UserManagerActivity.class);
                     intent.putExtra("spotId",spotId);
                     intent.putExtra("sightId",sightId);
                     startActivity(intent);

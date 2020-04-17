@@ -321,6 +321,14 @@
                 android:layout_margin="5dp"
                 android:layout_toLeftOf="@+id/update_sight"
                 android:src="@drawable/icon_add"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/see_sight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:src="@drawable/map"/>
+
         </RelativeLayout>
     </RelativeLayout>
 

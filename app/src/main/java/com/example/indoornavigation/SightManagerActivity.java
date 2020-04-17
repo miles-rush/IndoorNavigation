@@ -51,6 +51,7 @@ public class SightManagerActivity extends AppCompatActivity {
     private FloatingActionButton addSpot;
     private FloatingActionButton updateSight;
     private FloatingActionButton deleteSight;
+    private FloatingActionButton seeSight;
 
     private SwipeRefreshLayout spotSwipeRefreshLayout;
     private RecyclerView spotRecyclerView;
@@ -97,6 +98,7 @@ public class SightManagerActivity extends AppCompatActivity {
         addSpot = findViewById(R.id.add_spot);
         updateSight = findViewById(R.id.update_sight);
         deleteSight = findViewById(R.id.delete_sight);
+        seeSight = findViewById(R.id.see_sight);
 
         spotRecyclerView = findViewById(R.id.sight_spot_list);
         spotSwipeRefreshLayout = findViewById(R.id.sight_spot_swipe);
@@ -104,6 +106,15 @@ public class SightManagerActivity extends AppCompatActivity {
         getLocation = findViewById(R.id.manager_get_location);
         pointsSwipe = findViewById(R.id.manager_points_swipe);
         pointRecyclerView = findViewById(R.id.manager_points_list);
+
+        seeSight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SightManagerActivity.this,SightALLMarksActivity.class);
+                intent.putExtra("sightId",sightId);
+                startActivity(intent);
+            }
+        });
 
         spotSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -136,6 +147,7 @@ public class SightManagerActivity extends AppCompatActivity {
         manager = new LinearLayoutManager(this);
         spotRecyclerView.setLayoutManager(manager);
         spotAdapter = new SpotAdapter(spotList);
+        spotAdapter.setSightId(sightId);
         spotRecyclerView.setAdapter(spotAdapter);
         spotRecyclerView.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
     }

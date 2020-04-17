@@ -21,6 +21,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class SpotAdapter extends RecyclerView.Adapter<SpotAdapter.ViewHolder> {
     private List<Spot> spotList;
+    private Integer sightId;
+
+    public void setSightId(Integer sightId) {
+        this.sightId = sightId;
+    }
 
     public SpotAdapter(List<Spot> spotList) {
         this.spotList = spotList;
@@ -51,6 +56,7 @@ public class SpotAdapter extends RecyclerView.Adapter<SpotAdapter.ViewHolder> {
                 int spotId = spot.getId();
                 Intent intent = new Intent(v.getContext(), SpotManagerActivity.class);
                 intent.putExtra("spotId",spotId);
+                intent.putExtra("sightId",sightId);
                 v.getContext().startActivity(intent);
             }
         });

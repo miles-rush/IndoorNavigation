@@ -63,10 +63,13 @@ public class IndoorLocationActivity extends AppCompatActivity {
 
     private FloatingActionButton startLocation;
     private FloatingActionButton uploadLocation;
+    private FloatingActionButton deleteLocation;
+
     private ImageView back;
 
     private TextView infoSpotName;
     private TextView infoSpotLocation;
+
 
     private LatLng latLng; //GPS定位时的坐标
     private LatLng doorLatLng; //起点坐标
@@ -76,6 +79,7 @@ public class IndoorLocationActivity extends AppCompatActivity {
 
     private Integer sightId;
     private Integer spotId;
+    private Integer pointId;
 
     private Sight sight = null;
     private Spot spot = null;
@@ -160,6 +164,7 @@ public class IndoorLocationActivity extends AppCompatActivity {
     private void initUI() {
         startLocation = findViewById(R.id.indoor_start_location); //开始定位
         uploadLocation = findViewById(R.id.indoor_upload_location); //上传当前的坐标关联到景点
+        deleteLocation = findViewById(R.id.indoor_delete_location); //删除当前坐标
 
         back = findViewById(R.id.indoor_location_back);
 
@@ -173,6 +178,28 @@ public class IndoorLocationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 finish();
+            }
+        });
+
+        deleteLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(IndoorLocationActivity.this);
+                dialog.setTitle("信息:");
+                dialog.setMessage("是否要删除当前景点坐标信息!");
+                dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        delete();
+                    }
+                });
+                dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
             }
         });
 
@@ -211,6 +238,34 @@ public class IndoorLocationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //提交当前坐标后 按钮可视情况重置
                 beforeAddCheck();
+            }
+        });
+    }
+
+
+
+    private void delete() {
+        final RequestBody requestBody = new FormBody.Builder()
+                .add("id",pointId.toString())
+                .build();
+        HttpUtil.sendOkHttpPostRequest("/spotPoint/delete", requestBody, new okhttp3.Callback() {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String sightsData = response.body().string();
+                final ResponseCode responseCode = GsonUtil.getResponseJson(sightsData);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(IndoorLocationActivity.this, responseCode.getInfo(),Toast.LENGTH_SHORT).show();
+                        if (responseCode.getCode().equals("1")) {//删除后关闭
+                            finish();
+                        }
+                    }
+                });
+            }
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Toast.makeText(IndoorLocationActivity.this,"网络错误",Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -268,7 +323,7 @@ public class IndoorLocationActivity extends AppCompatActivity {
         });
     }
 
-    //下载数据
+    //下载数据 显示数据
     private void getSpotInfo() {
         HttpUtil.sendOkHttpGetRequest("/spot/query?id=" + spotId, new okhttp3.Callback() {
             @Override
@@ -280,6 +335,40 @@ public class IndoorLocationActivity extends AppCompatActivity {
                     public void run() {
                         //基础信息的显示
                         infoSpotName.setText("景点:" + spot.getName());
+                        //判断是否已有数据 已有的话显示信息 和 删除按钮
+                        if (spot.getPoint() != null) {
+                            if (spot.getPoint().getId() != null) {
+                                pointId = spot.getPoint().getId();
+                                String lat = spot.getPoint().getLatitude();
+                                String lon = spot.getPoint().getLongitude();
+                                if (lat.length() > 0 && lon.length() > 0) {
+                                    int length = 7;
+                                    if (lat.length() < length) {
+                                        length = lat.length();
+                                    }
+                                    if (lon.length() < length) {
+                                        length = lon.length();
+                                    }
+                                    String loc = lat.substring(0,length) + "," + lon.substring(0,length);
+                                    infoSpotLocation.setText("坐标:" + loc);
+
+                                    deleteLocation.setVisibility(View.VISIBLE);
+                                    startLocation.setVisibility(View.INVISIBLE);
+
+                                    //显示 景点的地图标记
+//                                    MarkerOptions markerOptions = new MarkerOptions();
+//                                    Double x = Double.parseDouble(lat);
+//                                    Double y = Double.parseDouble(lon);
+//                                    LatLng latLng = new LatLng(x,y);
+//                                    markerOptions.position(latLng);
+//                                    markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.spot_point)));
+//                                    markerOptions.title(spot.getName());
+//                                    markerOptions.setFlat(true);
+//                                    Marker marker = aMap.addMarker(markerOptions);
+//                                    marker.showInfoWindow();
+                                }
+                            }
+                        }
                     }
                 });
             }
@@ -352,6 +441,29 @@ public class IndoorLocationActivity extends AppCompatActivity {
                 }
             }
         }
+
+        for (Spot spot : sight.getSpots()) {
+            if (spot.getId() == spotId) {
+                if (spot.getPoint() != null) {
+                    if (spot.getPoint().getId() != null) {
+                        String lat = spot.getPoint().getLatitude();
+                        String lon = spot.getPoint().getLongitude();
+                        //显示 景点的地图标记
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        Double x = Double.parseDouble(lat);
+                        Double y = Double.parseDouble(lon);
+                        LatLng latLng = new LatLng(x,y);
+                        markerOptions.position(latLng);
+                        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.spot_point)));
+                        markerOptions.title(spot.getName());
+                        markerOptions.setFlat(true);
+                        Marker marker = aMap.addMarker(markerOptions);
+                        marker.showInfoWindow();
+                    }
+                }
+            }
+        }
+
     }
 
     //地图相关的参数
@@ -404,13 +516,17 @@ public class IndoorLocationActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (deviceAttitudeHandler != null) {
+            deviceAttitudeHandler.stop();
+        }
+        if (stepDetectionHandler != null) {
+            stepDetectionHandler.stop();
+        }
         //在activity执行onDestroy时执行mMapView.onDestroy()，销毁地图
         mapView.onDestroy();
         mapLocationClient.stopLocation();
         mapLocationClient.onDestroy();
 
-        deviceAttitudeHandler.stop();
-        stepDetectionHandler.stop();
     }
     @Override
     protected void onResume() {

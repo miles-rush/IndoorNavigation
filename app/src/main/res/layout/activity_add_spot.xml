@@ -90,6 +90,7 @@
                     android:layout_marginTop="10dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="10dp"
+                    android:enabled="false"
                     android:hint="景点坐标"/>
 
                 <ImageView
