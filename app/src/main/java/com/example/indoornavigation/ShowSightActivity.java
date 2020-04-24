@@ -10,10 +10,12 @@ import okhttp3.Call;
 import okhttp3.Response;
 
 import android.content.ComponentName;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +29,7 @@ import com.example.tool.GsonUtil;
 import com.example.tool.HttpUtil;
 import com.example.tool.MusicService;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
 import java.util.List;
@@ -41,6 +44,7 @@ public class ShowSightActivity extends AppCompatActivity {
 
     private ActionBar actionBar;
 
+    private FloatingActionButton goTravel;
 
     private RecyclerView recyclerView;
     private LinearLayoutManager manager;
@@ -64,8 +68,9 @@ public class ShowSightActivity extends AppCompatActivity {
         sightContentText = findViewById(R.id.sight_content_text);
         sightAddress = findViewById(R.id.show_sight_address);
         sightContact = findViewById(R.id.show_sight_contact);
-
         recyclerView = findViewById(R.id.show_sight_spot_list);
+        goTravel = findViewById(R.id.go_travel);
+
         setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -73,6 +78,16 @@ public class ShowSightActivity extends AppCompatActivity {
         }
         Glide.with(this).load(R.drawable.background_top).into(sightImageView);
 
+
+        goTravel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //todo 这里应该有一个判断离景区的位置
+                Intent intent = new Intent(ShowSightActivity.this,TravelActivity.class);
+                intent.putExtra("sightId",sightId);
+                startActivity(intent);
+            }
+        });
     }
 
     //加载信息后的UI设置
