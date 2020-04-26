@@ -317,8 +317,8 @@ public class TravelActivity extends AppCompatActivity {
     }
 
 
-    public static int pointJudeTimes = 10;
-    public static int pointUpdateTimes = 5;
+    public static int pointJudeTimes = 1;
+    public static int pointUpdateTimes = 1;
     private int times = 0;
     private StepDetectionHandler.StepDetectionListener mStepDetectionListener = new StepDetectionHandler.StepDetectionListener(){
         public void newStep(float stepSize) {
@@ -453,7 +453,7 @@ public class TravelActivity extends AppCompatActivity {
         return false;
     }
 
-    public static float judeMeter = 2;
+    public static float judeMeter = 8;
     //运动时信息更新
     private void travelInfoUpdate() {
         //判断游客是否来到进入点

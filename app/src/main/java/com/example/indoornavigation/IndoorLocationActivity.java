@@ -44,6 +44,7 @@ import com.example.bean.Point;
 import com.example.bean.ResponseCode;
 import com.example.bean.Sight;
 import com.example.bean.Spot;
+import com.example.engine.PedometerEngine;
 import com.example.handler.DeviceAttitudeHandler;
 import com.example.handler.StepDetectionHandler;
 import com.example.handler.StepPositioningHandler;
@@ -139,6 +140,9 @@ public class IndoorLocationActivity extends AppCompatActivity {
         stepPositioningHandler.setmCurrentLocation(sLocation);
     }
 
+    //todo test
+    List<Float> list = new ArrayList<>();
+
     private StepDetectionHandler.StepDetectionListener mStepDetectionListener = new StepDetectionHandler.StepDetectionListener(){
         public void newStep(float stepSize) {
             Location newLocation = stepPositioningHandler.computeNextStep(stepSize, deviceAttitudeHandler.orientationVals[0]);
@@ -151,7 +155,14 @@ public class IndoorLocationActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        infoSpotLocation.setText("Js:"+nowLng.latitude+","+nowLng.longitude);
+                        String x = "";
+                        list = PedometerEngine.getInstance().getThresholdList();
+                        if (list.size() > 0) {
+                            for (float i:list) {
+                                x = x + i + "|";
+                            }
+                        }
+                        infoSpotLocation.setText("Js:"+x+"||"+nowLng.latitude+","+nowLng.longitude);
                     }
                 });
                 latLngs.add(nowLng);

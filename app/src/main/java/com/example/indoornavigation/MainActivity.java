@@ -71,35 +71,41 @@ public class MainActivity extends AppCompatActivity {
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String accountText = account.getText().toString().trim();
-                String passwordText = password.getText().toString().trim();
-                RequestBody requestBody = new FormBody.Builder()
-                        .add("account",accountText)
-                        .add("password",passwordText)
-                        .build();
-                HttpUtil.sendOkHttpPostRequest("/user/register", requestBody, new okhttp3.Callback() {
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        String responseData = response.body().string();
-                        final ResponseCode responseCode = GsonUtil.getResponseJson(responseData);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(MainActivity.this, responseCode.getInfo(),Toast.LENGTH_SHORT).show();
-                                if (responseCode.getCode().equals("1")) {//注册后跳转
+                Intent intent = new Intent(MainActivity.this, DrawTestActivity.class);
+                startActivity(intent);
+                //register();
+            }
+        });
+    }
 
-                                }
-                            }
-                        });
-                    }
+    private void register() {
+        String accountText = account.getText().toString().trim();
+        String passwordText = password.getText().toString().trim();
+        RequestBody requestBody = new FormBody.Builder()
+                .add("account",accountText)
+                .add("password",passwordText)
+                .build();
+        HttpUtil.sendOkHttpPostRequest("/user/register", requestBody, new okhttp3.Callback() {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String responseData = response.body().string();
+                final ResponseCode responseCode = GsonUtil.getResponseJson(responseData);
+                runOnUiThread(new Runnable() {
                     @Override
-                    public void onFailure(Call call, IOException e) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(MainActivity.this,"网络错误",Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                    public void run() {
+                        Toast.makeText(MainActivity.this, responseCode.getInfo(),Toast.LENGTH_SHORT).show();
+                        if (responseCode.getCode().equals("1")) {//注册后跳转
+
+                        }
+                    }
+                });
+            }
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this,"网络错误",Toast.LENGTH_SHORT).show();
                     }
                 });
             }

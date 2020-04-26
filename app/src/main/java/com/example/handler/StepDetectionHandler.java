@@ -6,9 +6,12 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
+import com.example.engine.PedometerEngine;
+
 public class StepDetectionHandler extends Activity implements SensorEventListener {
     SensorManager sm;
     Sensor sensor;
+    PedometerEngine pedometerEngine;
 
     private StepDetectionListener mStepDetectionListener;
 
@@ -17,7 +20,9 @@ public class StepDetectionHandler extends Activity implements SensorEventListene
     public StepDetectionHandler(SensorManager sm) {
         super();
         this.sm = sm;
-        sensor = sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);//线性传感器
+        //sensor = sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);//线性加速度传感器
+        sensor = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);//加速度传感器
+        pedometerEngine = PedometerEngine.getInstance();
     }
 
     public void start() {
@@ -35,18 +40,31 @@ public class StepDetectionHandler extends Activity implements SensorEventListene
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        float x;
         float y;
-        if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+        float z;
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            x = event.values[0];
             y = event.values[1];
+            z = event.values[2];
 
-            if (y > 1 && mStepDetectionListener != null) {
-                onNewStepDetected();
+//            if (y > 1 && mStepDetectionListener != null) {
+//                onNewStepDetected();
+//            }
+
+            //采样到加速度后 添加到列表之中
+            pedometerEngine.addAvg(x,y,z);
+            if (pedometerEngine.calculationVarChange() && mStepDetectionListener != null) {
+                onNewStepDetected(pedometerEngine.getLength());
             }
+
         }
+
     }
 
-    public void onNewStepDetected() {
-        float distanceStep = 0.6f;//步长设置
+    public void onNewStepDetected(float length) {
+        //float distanceStep = 0.6f;//步长设置
+        float distanceStep = length;
         step++;
         mStepDetectionListener.newStep(distanceStep);
     }
