@@ -45,9 +45,13 @@ import com.example.bean.ResponseCode;
 import com.example.bean.Sight;
 import com.example.bean.Spot;
 import com.example.engine.PedometerEngine;
+import com.example.engine.StepPositionEngine;
 import com.example.handler.DeviceAttitudeHandler;
 import com.example.handler.StepDetectionHandler;
 import com.example.handler.StepPositioningHandler;
+import com.example.orient.OrientSensor;
+import com.example.step.StepSensorAcceleration;
+import com.example.step.StepSensorBase;
 import com.example.tool.GsonUtil;
 import com.example.tool.HttpUtil;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -57,7 +61,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IndoorLocationActivity extends AppCompatActivity {
+public class IndoorLocationActivity extends AppCompatActivity implements StepSensorBase.StepCallBack, OrientSensor.OrientCallBack {
     private MapView mapView = null;
     private AMap aMap = null;
     private MyLocationStyle myLocationStyle = null;
@@ -93,6 +97,13 @@ public class IndoorLocationActivity extends AppCompatActivity {
     private StepPositioningHandler stepPositioningHandler;
     private DeviceAttitudeHandler deviceAttitudeHandler;
 
+    //集成传感器
+    private StepSensorBase mStepSensor; // 计步传感器
+    private OrientSensor mOrientSensor; // 方向传感器
+
+    private StepPositionEngine stepPositionEngine; //坐标计算
+
+
     boolean isWalking = false;
     Location sLocation = new Location();
 
@@ -107,7 +118,8 @@ public class IndoorLocationActivity extends AppCompatActivity {
         sightId = getIntent().getIntExtra("sightId",0);
         spotId = getIntent().getIntExtra("spotId",0);
 
-
+        stepPositionEngine = new StepPositionEngine();
+        stepPositioningHandler = new StepPositioningHandler();
 
         initMap();
         initLocation();
@@ -155,18 +167,18 @@ public class IndoorLocationActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        String x = "";
-                        list = PedometerEngine.getInstance().getThresholdList();
-                        if (list.size() > 0) {
-                            for (float i:list) {
-                                x = x + i + "|";
-                            }
-                        }
-                        infoSpotLocation.setText("Js:"+x+"||"+nowLng.latitude+","+nowLng.longitude);
+//                        String x = "";
+//                        list = PedometerEngine.getInstance().getThresholdList();
+//                        if (list.size() > 0) {
+//                            for (float i:list) {
+//                                x = x + i + "|";
+//                            }
+//                        }
+                        infoSpotLocation.setText("Js:"+"||"+nowLng.latitude+","+nowLng.longitude);
                     }
                 });
                 latLngs.add(nowLng);
-                aMap.addPolyline(new PolylineOptions().addAll(latLngs).width(10).color(Color.argb(255,1,1,1)));
+                aMap.addPolyline(new PolylineOptions().addAll(latLngs).width(3).color(Color.argb(255,1,1,1)));
             }
         }
     };
@@ -231,6 +243,9 @@ public class IndoorLocationActivity extends AppCompatActivity {
                     stepDetectionHandler.start();
                     isWalking = true;
 
+                    //todo
+                    //initEngine();
+
                     //隐藏开始按钮 提交按钮设置为可见
                     startLocation.setVisibility(View.INVISIBLE);
                     uploadLocation.setVisibility(View.VISIBLE);
@@ -253,6 +268,45 @@ public class IndoorLocationActivity extends AppCompatActivity {
         });
     }
 
+
+    private void initEngine() {
+        //新的算法
+        mStepSensor = new StepSensorAcceleration(this, this);
+        if (!mStepSensor.registerStep()) {
+            Toast.makeText(this, "计步功能不可用！", Toast.LENGTH_SHORT).show();
+        }
+
+        // 注册方向监听
+        mOrientSensor = new OrientSensor(this, this);
+        if (!mOrientSensor.registerOrient()) {
+            Toast.makeText(this, "方向功能不可用！", Toast.LENGTH_SHORT).show();
+        }
+
+        //坐标集添加起点坐标
+        latLngs.add(doorLatLng);
+        //坐标计算类添加起点
+        sLocation.setLongitude(latLng.longitude);
+        sLocation.setLatitude(latLng.latitude);
+        stepPositionEngine.setNowLocation(sLocation);
+    }
+
+    //实现回调函数
+    @Override
+    public void Step(int stepNum) {
+        //  计步回调
+        Location temp = stepPositionEngine.computeNextStep(0.5f);
+        //LatLng next = stepPositionEngine.computeNextStep(0.5f);
+        LatLng next = new LatLng(temp.getLatitude(),temp.getLongitude());
+        latLngs.add(next);
+        aMap.addPolyline(new PolylineOptions().addAll(latLngs).width(10).color(Color.argb(255,1,1,1)));
+    }
+
+    @Override
+    public void Orient(int orient) {
+        // 方向回调
+        stepPositionEngine.setBearing(orient);
+        infoSpotLocation.setText("方向:" + orient);
+    }
 
 
     private void delete() {
@@ -416,7 +470,7 @@ public class IndoorLocationActivity extends AppCompatActivity {
         });
     }
 
-    public static float nearMeter = 2; //判断坐标近似的阈值
+    public static float nearMeter = 5; //判断坐标近似的阈值
     //定位开始前判断是否在某个sight入口附近
     private boolean nearLocation() {
         //AMapUtils.calculateLineDistance()
@@ -533,6 +587,16 @@ public class IndoorLocationActivity extends AppCompatActivity {
         if (stepDetectionHandler != null) {
             stepDetectionHandler.stop();
         }
+
+        //新的传感器算法的关闭
+        if (mStepSensor != null) {
+            mStepSensor.unregisterStep();
+        }
+
+        if (mOrientSensor != null) {
+            mOrientSensor.unregisterOrient();
+        }
+
         //在activity执行onDestroy时执行mMapView.onDestroy()，销毁地图
         mapView.onDestroy();
         mapLocationClient.stopLocation();

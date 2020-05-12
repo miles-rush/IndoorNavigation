@@ -4,6 +4,8 @@ package com.example.handler;
 import com.example.bean.Location;
 
 public class StepPositioningHandler {
+
+
     private Location mCurrentLocation;
     private static final int eRadius = 6371000; //rayon de la terre en m
 
@@ -15,12 +17,13 @@ public class StepPositioningHandler {
         this.mCurrentLocation = mCurrentLocation;
     }
 
+
     /** Calcule la nouvelle position de l'utilisateur à partir de la courante
      * @param stepSize la taille du pas qu'a fait l'utilisateur
-     * @param bearing l'angle de direction
+     //* @param bearing l'angle de direction
      * @return la nouvelle localisation
      */
-    public Location computeNextStep(float stepSize,float bearing) {
+    public Location computeNextStep(float stepSize, float bearing) {
         Location newLoc = new Location();
         newLoc.setLatitude(mCurrentLocation.getLatitude());
         newLoc.setLongitude(mCurrentLocation.getLongitude());

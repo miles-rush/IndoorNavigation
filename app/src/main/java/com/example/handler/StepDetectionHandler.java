@@ -48,15 +48,16 @@ public class StepDetectionHandler extends Activity implements SensorEventListene
             y = event.values[1];
             z = event.values[2];
 
-//            if (y > 1 && mStepDetectionListener != null) {
-//                onNewStepDetected();
-//            }
+            //y > 1
+            if (y > 5 && mStepDetectionListener != null) {
+                onNewStepDetected(0.3f);
+            }
 
             //采样到加速度后 添加到列表之中
-            pedometerEngine.addAvg(x,y,z);
-            if (pedometerEngine.calculationVarChange() && mStepDetectionListener != null) {
-                onNewStepDetected(pedometerEngine.getLength());
-            }
+//            pedometerEngine.addAvg(x,y,z);
+//            if (pedometerEngine.calculationVarChange() && mStepDetectionListener != null) {
+//                onNewStepDetected(0.5f);
+//            }
 
         }
 

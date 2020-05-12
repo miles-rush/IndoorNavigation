@@ -58,7 +58,7 @@ public class StepView extends View {
         mArrowPath.lineTo(0, -3 * arrowR);
         mArrowPath.close();
 
-        mBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.map_point);
+        mBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.big_map);
     }
 
     @Override

@@ -14,9 +14,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -70,6 +73,7 @@ public class TravelActivity extends AppCompatActivity {
 
     private TextView nowLocationText;
     private TextView nowVoiceName;
+    private Button testButton;
 
     private ImageView back;
     private ImageView voiceStop;
@@ -95,6 +99,9 @@ public class TravelActivity extends AppCompatActivity {
     private StepDetectionHandler stepDetectionHandler;
     private StepPositioningHandler stepPositioningHandler;
     private DeviceAttitudeHandler deviceAttitudeHandler;
+
+    //线程
+    private JudgeThread judgeThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,6 +167,7 @@ public class TravelActivity extends AppCompatActivity {
                         public void run() {
                             //更新当前位置经纬度
                             gpsLatLng = new LatLng(aMapLocation.getLatitude(),aMapLocation.getLongitude());
+                            nowLng = new LatLng(aMapLocation.getLatitude(),aMapLocation.getLongitude());
                         }
                     });
                 }else {
@@ -193,6 +201,14 @@ public class TravelActivity extends AppCompatActivity {
 
         start = findViewById(R.id.travel_start);
         end = findViewById(R.id.travel_end);
+
+        testButton = findViewById(R.id.test_button);
+        testButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                nearLocation();
+            }
+        });
 
         back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -264,6 +280,9 @@ public class TravelActivity extends AppCompatActivity {
                 stepDetectionHandler.start();
                 isWalking = true;
 
+                judgeThread = new JudgeThread();
+                judgeThread.start();
+
                 //隐藏开始按钮 提交按钮设置为可见
                 start.setVisibility(View.INVISIBLE);
                 end.setVisibility(View.VISIBLE);
@@ -288,6 +307,7 @@ public class TravelActivity extends AppCompatActivity {
                 if (stepDetectionHandler != null) {
                     stepDetectionHandler.stop();
                 }
+                keep = false;
 
                 end.setVisibility(View.INVISIBLE);
                 start.setVisibility(View.VISIBLE);
@@ -314,6 +334,9 @@ public class TravelActivity extends AppCompatActivity {
         sLocation.setLongitude(gpsLatLng.longitude);
         sLocation.setLatitude(gpsLatLng.latitude);
         stepPositioningHandler.setmCurrentLocation(sLocation);
+
+        //开始室内定位后 当前位置设置为起始位置
+        nowLng = new LatLng(gpsLatLng.latitude,gpsLatLng.longitude);
     }
 
 
@@ -329,14 +352,18 @@ public class TravelActivity extends AppCompatActivity {
                 // gm.newPoint(new LatLng(newloc.getLatitude(), newloc.getLongitude()),dah.orientationVals[0]);
                 //final LatLng lng = new LatLng(newLocation.getLatitude(),newLocation.getLongitude());
                 nowLng = new LatLng(newLocation.getLatitude(),newLocation.getLongitude());
-                times++;
-                if (times % pointJudeTimes == 0) {
-                    travelInfoUpdate();
-                }
-                if (times % pointUpdateTimes == 0) {
-                    latLngs.add(nowLng);
-                    aMap.addPolyline(new PolylineOptions().addAll(latLngs).width(10).color(Color.argb(255,1,1,1)));
-                }
+                latLngs.add(nowLng);
+                aMap.addPolyline(new PolylineOptions().addAll(latLngs).width(3).color(Color.argb(255,1,1,1)));
+                //travelInfoUpdate();
+
+//                times++;
+//                if (times % pointJudeTimes == 0) {
+//                    travelInfoUpdate();
+//                }
+//                if (times % pointUpdateTimes == 0) {
+//                    latLngs.add(nowLng);
+//                    aMap.addPolyline(new PolylineOptions().addAll(latLngs).width(10).color(Color.argb(255,1,1,1)));
+//                }
             }
         }
     };
@@ -349,6 +376,7 @@ public class TravelActivity extends AppCompatActivity {
         dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                keep = false;
                 finish();
             }
         });
@@ -434,12 +462,14 @@ public class TravelActivity extends AppCompatActivity {
     }
 
 
-    public static float nearMeter = 2; //判断坐标近似的阈值
+    public static float nearMeter = 5; //判断坐标近似的阈值
+    private String nearPointName;
     //定位开始前判断是否在某个sight入口附近
     private boolean nearLocation() {
         //AMapUtils.calculateLineDistance()
         List<Point> pointList = sight.getPoints();
         for (Point point:pointList) {
+            nearPointName = point.getName();
             Double x = Double.parseDouble(point.getLatitude());
             Double y = Double.parseDouble(point.getLongitude());
             LatLng temp = new LatLng(x,y);
@@ -447,34 +477,88 @@ public class TravelActivity extends AppCompatActivity {
             float distance = AMapUtils.calculateLineDistance(gpsLatLng, temp);
             if (distance < nearMeter) {
                 doorLatLng = temp; //起始坐标
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        nowLocationText.setText("当前位置:" + nearPointName);
+                    }
+                });
                 return true;
             }
         }
         return false;
     }
 
-    public static float judeMeter = 8;
+    public static final int UPDATE_TEXT = 1;
+
+    private Handler handler = new Handler() {
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case UPDATE_TEXT:
+                    travelInfoUpdate();
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
+    private boolean keep = true; //控制线程开关
+    //线程 每隔2s对现在的坐标点进行判断
+    private class JudgeThread extends Thread{
+        @Override
+        public void run() {
+            super.run();
+            while (keep) {
+                //travelInfoUpdate();
+                Message message = new Message();
+                message.what = UPDATE_TEXT;
+                handler.sendMessage(message);
+                try {
+                    Thread.sleep(5000);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static float judeMeter = 5;
+    private String sightName;
+    private Spot tempSpot;
+    private String historySightName;
+    private Spot historySpot;
+
     //运动时信息更新
-    private void travelInfoUpdate() {
+    private synchronized boolean travelInfoUpdate() {
         //判断游客是否来到进入点
-        for (final Point point : sightPointList) {
+        sightPointList = sight.getPoints();
+        for (Point point : sightPointList) {
+            sightName = point.getName();
             Double x = Double.parseDouble(point.getLatitude());
             Double y = Double.parseDouble(point.getLongitude());
             LatLng temp = new LatLng(x,y);
 
             float distance = AMapUtils.calculateLineDistance(nowLng, temp);
             if (distance < judeMeter) {
+                if (historySightName != null) {
+                    if (historySightName.equals(sightName)) {
+                        return false;//还是上一次的点范围内
+                    }
+                }
+                historySightName = sightName;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        nowLocationText.setText("当前位置:" + point.getName());
+                        nowLocationText.setText("当前位置:" + sightName);
                     }
                 });
-                return;
+                return true;
             }
         }
 
-        for (final Spot spot : spotList) {
+        spotList = sight.getSpots();
+        for (Spot spot : spotList) {
             if (spot.getPoint() != null) {
                 if (spot.getPoint().getId() != null) {
                     Double x = Double.parseDouble(spot.getPoint().getLatitude());
@@ -482,14 +566,21 @@ public class TravelActivity extends AppCompatActivity {
                     LatLng temp = new LatLng(x,y);
 
                     float distance = AMapUtils.calculateLineDistance(nowLng, temp);
+                    tempSpot = spot;
                     if (distance < judeMeter) {
+                        if (historySpot != null) {
+                            if (tempSpot.getName().equals(historySpot.getName())) {
+                                return false;
+                            }
+                        }
+                        historySpot = tempSpot;
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                nowLocationText.setText("当前位置:" + spot.getName());
-                                if (spot.getVoices() != null) {
-                                    if (spot.getVoices().size() > 0) {
-                                        Voice voice = spot.getVoices().get(0);
+                                nowLocationText.setText("当前位置:" + tempSpot.getName());
+                                if (tempSpot.getVoices() != null) {
+                                    if (tempSpot.getVoices().size() > 0) {
+                                        Voice voice = tempSpot.getVoices().get(0);
                                         nowPlayVoiceFilePath = HttpUtil.RESOURCE_URL + voice.getResourcesPath();
                                         nowVoiceName.setText("景点音频:" + voice.getName());
                                         initMusicPlay();
@@ -498,11 +589,12 @@ public class TravelActivity extends AppCompatActivity {
                                 }
                             }
                         });
-                        return;
+                        return true;
                     }
                 }
             }
         }
+        return false;
     }
 
     //初始化音乐播放器

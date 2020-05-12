@@ -52,7 +52,7 @@ public class PedometerEngine {
     }
 
     private static float T1 = 2; //检查大幅度迈步时期具有较高的加速度
-    private static float T2 = 1; //检测脚与地面接触的站立时期
+    private static float T2 = 2; //检测脚与地面接触的站立时期
 
     private boolean isWalking; //判断起步开始 到 起步结束
     //迈出一步的判断条件
@@ -85,7 +85,7 @@ public class PedometerEngine {
                     //出现低加速度 表明这一步结束落地
                     step++;
                     isWalking = false;
-                    strideLength();//计算这步的步长
+                    //strideLength();//计算这步的步长
                     return true;
                 }
             }
