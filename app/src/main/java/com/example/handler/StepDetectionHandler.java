@@ -50,7 +50,7 @@ public class StepDetectionHandler extends Activity implements SensorEventListene
 
             //y > 1
             if (y > 5 && mStepDetectionListener != null) {
-                onNewStepDetected(0.3f);
+                onNewStepDetected(0.2f);
             }
 
             //采样到加速度后 添加到列表之中

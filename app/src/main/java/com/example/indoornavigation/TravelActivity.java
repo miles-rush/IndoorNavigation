@@ -272,6 +272,17 @@ public class TravelActivity extends AppCompatActivity {
                 aMap.setMyLocationEnabled(false);
                 Toast.makeText(TravelActivity.this,"关闭GPS，开始室内景点导航",Toast.LENGTH_SHORT).show();
 
+                //todo 演示用 将起点定位到博物馆
+                LatLng testLat = new LatLng(30.250609,120.143709);
+                gpsLatLng = testLat;
+                doorLatLng = testLat;
+                //移动到指定位置
+                CameraPosition position = new CameraPosition(testLat,15,0,30);
+                CameraUpdate update = CameraUpdateFactory.newCameraPosition(position);
+                aMap.moveCamera(update);
+                aMap.moveCamera(CameraUpdateFactory.zoomTo(20));//缩放程度设置
+
+
                 //传感器初始化
                 initSensor();
 
@@ -354,6 +365,7 @@ public class TravelActivity extends AppCompatActivity {
                 nowLng = new LatLng(newLocation.getLatitude(),newLocation.getLongitude());
                 latLngs.add(nowLng);
                 aMap.addPolyline(new PolylineOptions().addAll(latLngs).width(3).color(Color.argb(255,1,1,1)));
+                updatePeopleLocation(nowLng);
                 //travelInfoUpdate();
 
 //                times++;
@@ -424,7 +436,7 @@ public class TravelActivity extends AppCompatActivity {
                     LatLng latLng = new LatLng(x,y);
                     markerOptions.position(latLng);
                     markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.map_point_s)));
-                    markerOptions.title(point.getName());
+                    markerOptions.title("景区入口").snippet(point.getName());
                     markerOptions.setFlat(true);
                     Marker marker = aMap.addMarker(markerOptions);
                     marker.showInfoWindow();
@@ -446,10 +458,11 @@ public class TravelActivity extends AppCompatActivity {
                     LatLng latLng = new LatLng(x,y);
                     markerOptions.position(latLng);
                     markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.spot_point)));
-                    markerOptions.title(spot.getName());
+                    markerOptions.title("景点").snippet(spot.getName());
                     markerOptions.setFlat(true);
                     Marker marker = aMap.addMarker(markerOptions);
                     marker.showInfoWindow();
+
                 }
             }
         }
@@ -459,6 +472,22 @@ public class TravelActivity extends AppCompatActivity {
 //        CameraUpdate update = CameraUpdateFactory.newCameraPosition(position);
 //        aMap.moveCamera(update);
 //        aMap.moveCamera(CameraUpdateFactory.zoomTo(20));//缩放程度设置
+    }
+
+    //开始室内定位后 更新游客所在的位置
+    private Marker peopleIcon;
+    private void updatePeopleLocation(LatLng lng) {
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(lng);
+        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.icon_people)));
+        markerOptions.title("你的位置");
+        markerOptions.setFlat(true);
+
+        if (peopleIcon != null) {
+            peopleIcon.destroy();
+        }
+
+        peopleIcon = aMap.addMarker(markerOptions);
     }
 
 

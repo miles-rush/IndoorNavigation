@@ -261,7 +261,7 @@ public class ShowMarksActivity extends AppCompatActivity {
             //绘制标记
             markerOptions.position(latLng);
             markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.map_point_s)));
-            markerOptions.title(point.getName());
+            markerOptions.title("景区入口").snippet(point.getName());
             markerOptions.setFlat(true);
             Marker marker = aMap.addMarker(markerOptions);
             marker.showInfoWindow();

@@ -30,10 +30,12 @@ import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.AMapOptions;
 import com.amap.api.maps.AMapUtils;
+import com.amap.api.maps.CameraUpdate;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.UiSettings;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
@@ -179,6 +181,7 @@ public class IndoorLocationActivity extends AppCompatActivity implements StepSen
                 });
                 latLngs.add(nowLng);
                 aMap.addPolyline(new PolylineOptions().addAll(latLngs).width(3).color(Color.argb(255,1,1,1)));
+                updatePeopleLocation(nowLng);
             }
         }
     };
@@ -234,6 +237,17 @@ public class IndoorLocationActivity extends AppCompatActivity implements StepSen
                     mapLocationClient.stopLocation();
                     aMap.setMyLocationEnabled(false);
                     Toast.makeText(IndoorLocationActivity.this,"关闭GPS，开始室内定位",Toast.LENGTH_SHORT).show();
+
+                    //todo 演示用 将起点定位到博物馆
+                    LatLng testLat = new LatLng(30.250609,120.143709);
+                    latLng = testLat;
+                    doorLatLng = testLat;
+                    //移动到指定位置
+                    CameraPosition position = new CameraPosition(testLat,15,0,30);
+                    CameraUpdate update = CameraUpdateFactory.newCameraPosition(position);
+                    aMap.moveCamera(update);
+                    aMap.moveCamera(CameraUpdateFactory.zoomTo(20));//缩放程度设置
+
 
                     //传感器初始化
                     initSensor();
@@ -470,6 +484,22 @@ public class IndoorLocationActivity extends AppCompatActivity implements StepSen
         });
     }
 
+    //开始室内定位后 更新游客所在的位置
+    private Marker peopleIcon;
+    private void updatePeopleLocation(LatLng lng) {
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(lng);
+        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.icon_people)));
+        markerOptions.title("你的位置");
+        markerOptions.setFlat(true);
+
+        if (peopleIcon != null) {
+            peopleIcon.destroy();
+        }
+
+        peopleIcon = aMap.addMarker(markerOptions);
+    }
+
     public static float nearMeter = 5; //判断坐标近似的阈值
     //定位开始前判断是否在某个sight入口附近
     private boolean nearLocation() {
@@ -499,7 +529,7 @@ public class IndoorLocationActivity extends AppCompatActivity implements StepSen
                     LatLng latLng = new LatLng(x,y);
                     markerOptions.position(latLng);
                     markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.map_point_s)));
-                    markerOptions.title(point.getName());
+                    markerOptions.title("景点入口").snippet(point.getName());
                     markerOptions.setFlat(true);
                     Marker marker = aMap.addMarker(markerOptions);
                     marker.showInfoWindow();
@@ -520,7 +550,7 @@ public class IndoorLocationActivity extends AppCompatActivity implements StepSen
                         LatLng latLng = new LatLng(x,y);
                         markerOptions.position(latLng);
                         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.spot_point)));
-                        markerOptions.title(spot.getName());
+                        markerOptions.title("景点").snippet(spot.getName());
                         markerOptions.setFlat(true);
                         Marker marker = aMap.addMarker(markerOptions);
                         marker.showInfoWindow();

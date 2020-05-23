@@ -123,7 +123,7 @@ public class SightALLMarksActivity extends AppCompatActivity {
                     LatLng latLng = new LatLng(x,y);
                     markerOptions.position(latLng);
                     markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.map_point_s)));
-                    markerOptions.title(point.getName());
+                    markerOptions.title("景区入口").snippet(point.getName());
                     markerOptions.setFlat(true);
                     Marker marker = aMap.addMarker(markerOptions);
                     marker.showInfoWindow();
@@ -145,7 +145,7 @@ public class SightALLMarksActivity extends AppCompatActivity {
                     LatLng latLng = new LatLng(x,y);
                     markerOptions.position(latLng);
                     markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.spot_point)));
-                    markerOptions.title(spot.getName());
+                    markerOptions.title("景点").snippet(spot.getName());
                     markerOptions.setFlat(true);
                     Marker marker = aMap.addMarker(markerOptions);
                     marker.showInfoWindow();
